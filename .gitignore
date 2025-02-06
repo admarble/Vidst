@@ -55,4 +55,67 @@ logs/
 # Dependencies
 node_modules/
 package-lock.json
-yarn.lock 
+yarn.lock
+
+# Video Processing
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+processed_videos/
+temp_videos/
+video_cache/
+
+# Model files and data
+*.h5
+*.pkl
+*.model
+*.bin
+*.onnx
+*.pt
+*.pth
+models/
+checkpoints/
+pretrained/
+
+# Vector storage and cache
+vector_store/
+.vectordb/
+.cache/
+*.faiss
+*.hdf5
+*.npy
+*.npz
+
+# Large media files
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+extracted_audio/
+
+# Project specific
+src/storage/vector/*
+src/storage/cache/*
+!src/storage/vector/.gitkeep
+!src/storage/cache/.gitkeep
+
+# Logs and monitoring
+*.log
+logs/
+monitoring/
+profiling/
+*.prof
+*.trace
+
+# API Keys and Secrets
+.env
+.env.*
+!.env.example
+credentials.json
+*_key.json
+*_credentials.json 
