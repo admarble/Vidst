@@ -103,6 +103,7 @@ src/storage/vector/*
 src/storage/cache/*
 !src/storage/vector/.gitkeep
 !src/storage/cache/.gitkeep
+info/
 
 # Logs and monitoring
 *.log
