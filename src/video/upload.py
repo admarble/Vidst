@@ -1,59 +1,71 @@
+"""Video upload functionality."""
+
 import os
 import shutil
 from pathlib import Path
-from typing import Tuple
+from uuid import uuid4
 
-from ..core.config import VideoConfig
-from ..core.exceptions import FileValidationError
-from ..models.video import Video
+from src.core.config import VideoConfig
+from src.core.exceptions import FileValidationError
+from src.models.video import Video
 
 
 class VideoUploader:
-    def __init__(self, config: VideoConfig):
-        self.config = config
-        self.upload_dir = Path(config.UPLOAD_DIRECTORY)
-        self.upload_dir.mkdir(exist_ok=True)
+    """Handles video file uploads and validation."""
 
-    def validate_file(self, file_path: str) -> Tuple[int, str]:
+    def __init__(self, config: VideoConfig):
+        """Initialize uploader with configuration."""
+        self.config = config
+
+    def validate_file(self, file_path: str) -> bool:
+        """Validate video file.
+
+        Args:
+            file_path: Path to video file
+
+        Returns:
+            True if file is valid
+
+        Raises:
+            FileValidationError: If file is invalid
         """
-        Validate file size and format
-        Returns: (file_size, format)
-        """
-        if not os.path.exists(file_path):
+        path = Path(file_path)
+
+        if not path.exists():
             raise FileValidationError("File does not exist")
 
-        file_size = os.path.getsize(file_path)
-        max_size = self.config.MAX_FILE_SIZE
-        if file_size > max_size:
-            msg = f"File size exceeds maximum limit of {max_size} bytes"
-            raise FileValidationError(msg)
+        if path.suffix.lower()[1:] not in {
+            fmt.lower() for fmt in self.config.SUPPORTED_FORMATS
+        }:
+            raise FileValidationError("Unsupported format")
 
-        file_format = Path(file_path).suffix[1:].upper()
-        supported = self.config.SUPPORTED_FORMATS
-        if file_format not in supported:
-            msg = f"Unsupported format. Supported formats: {supported}"
-            raise FileValidationError(msg)
+        if path.stat().st_size == 0:
+            raise FileValidationError("File is empty")
 
-        return file_size, file_format
+        if path.stat().st_size > self.config.MAX_FILE_SIZE:
+            raise FileValidationError("File exceeds maximum size")
+
+        return True
 
     def upload(self, file_path: str) -> Video:
-        """
-        Handle file upload and create Video object
-        """
-        file_size, file_format = self.validate_file(file_path)
+        """Upload video file.
 
-        video = Video(
-            filename=os.path.basename(file_path),
-            file_size=file_size,
-            format=file_format
-        )
+        Args:
+            file_path: Path to video file
 
-        # Create upload directory with video ID
-        video_dir = self.upload_dir / str(video.id)
-        video_dir.mkdir(exist_ok=True)
+        Returns:
+            Video: Video model instance
+        """
+        self.validate_file(file_path)
+        path = Path(file_path)
+
+        # Generate unique ID and create directory
+        video_id = uuid4()
+        upload_dir = self.config.UPLOAD_DIRECTORY / str(video_id)
+        upload_dir.mkdir(parents=True, exist_ok=True)
 
         # Copy file to upload directory
-        dest_path = video_dir / video.filename
-        shutil.copy2(file_path, dest_path)
+        dest_path = upload_dir / path.name
+        shutil.copy2(path, dest_path)
 
-        return video
+        return Video.from_path(dest_path, video_id)

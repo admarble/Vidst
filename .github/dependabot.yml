@@ -26,4 +26,37 @@ updates:
       - "dependencies"
       - "github-actions"
     # Allow up to 10 open pull requests for GitHub Actions dependencies
-    open-pull-requests-limit: 10 
+    open-pull-requests-limit: 10
+
+  # Enable version updates for pip
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "security"
+      - "python"
+    versioning-strategy: "lockfile-only"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    open-pull-requests-limit: 10
+    pull-request-branch-name:
+      separator: "-"
+    reviewers:
+      - "project-maintainers"
+    ignore:
+      # Ignore patch updates for development dependencies
+      - dependency-name: "black"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "isort"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "pytest*"
+        update-types: ["version-update:semver-patch"]
+    allow:
+      # Allow both direct and indirect updates for all packages
+      - dependency-type: "all" 

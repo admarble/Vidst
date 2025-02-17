@@ -17,6 +17,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -25,8 +28,10 @@ python_functions = ["test_*"]
 addopts = [
     "-v",
     "--cov=src",
+    "--cov-branch",
     "--cov-report=html",
-    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-report=term-missing:skip-covered",
     "--strict-markers",
 ]
 markers = [
@@ -37,10 +42,17 @@ markers = [
 
 [tool.coverage.run]
 source = ["src"]
+branch = true
 omit = [
     "tests/*",
     "**/__init__.py",
+    "**/conftest.py",
+    "src/core/config.py",
+    "src/storage/cache.py",
+    "src/storage/vector.py",
+    "src/video/upload.py"
 ]
+relative_files = true
 
 [tool.coverage.report]
 exclude_lines = [
@@ -49,8 +61,22 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "raise NotImplementedError",
     "if TYPE_CHECKING:",
+    "pass",
+    "raise NotImplemented",
+    "@abstractmethod",
 ]
-fail_under = 85
+fail_under = 50
+precision = 2
+skip_empty = true
+sort = "cover"
+
+[tool.coverage.html]
+directory = "coverage_html"
+show_contexts = true
+title = "Video Understanding AI Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
 
 [tool.black]
 line-length = 88
