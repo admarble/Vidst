@@ -1,0 +1,41 @@
+
+﻿src.storage.cache.CacheStore
+
+=============================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.storage.cache
+
+.. autoclass:: CacheStore
+
+   :members:
+   :show-inheritance:
+   :special-memberinherited-members:
+
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+
+      ~CacheStore.__init__
+      ~CacheStore.clear_all
+      ~CacheStore.clear_expired
+      ~CacheStore.retrieve
+      ~CacheStore.store
+
+Indices and Tables
+
+
+
+
+
+\* :doc:`/modindex`*

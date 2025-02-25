@@ -1,0 +1,506 @@
+/* Accessibility Enhancements */
+
+/* Theme customization */
+.theme-color-bg {
+    background-color: #2980B9;
+}
+
+.wy-side-nav-search {
+    background-color: #2980B9;
+}
+
+.wy-nav-top {
+    background-color: #2980B9;
+}
+
+/* Improve contrast ratios */
+.wy-nav-content {
+    color: #333;
+    background: #fff;
+}
+
+/* Ensure sufficient text spacing */
+.wy-nav-content p {
+    line-height: 1.5;
+    margin-bottom: 1.2em;
+}
+
+/* Make focus indicators more visible */
+a:focus,
+button:focus,
+[tabindex]:focus {
+    outline: 3px solid #2980B9;
+    outline-offset: 2px;
+}
+
+/* Improve heading hierarchy visibility */
+.section-title {
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    position: relative;
+}
+
+/* Skip to main content link */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #2980B9;
+    color: white;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s;
+}
+
+.skip-to-content:focus {
+    top: 0;
+}
+
+/* Improve table accessibility */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+th {
+    background-color: #2980B9;
+    color: white;
+    font-weight: bold;
+    text-align: left;
+    padding: 8px;
+}
+
+td {
+    padding: 8px;
+    border: 1px solid #e1e4e5;
+}
+
+/* Improve code block accessibility */
+div[class^='highlight'] {
+    border-radius: 4px;
+    margin: 1em 0;
+}
+
+pre {
+    padding: 12px;
+    overflow-x: auto;
+    line-height: 1.4;
+}
+
+/* Heading styles - removed redundant ARIA attributes */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 2px solid #2980B9;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #2980B9;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.25em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5,
+h6 {
+    font-size: 1em;
+}
+
+/* Improve link accessibility */
+a {
+    color: #2980B9;
+    text-decoration: underline;
+}
+
+a:hover,
+a:focus {
+    color: #3091d1;
+    text-decoration: none;
+}
+
+/* Improve form accessibility */
+input[type="text"],
+input[type="search"] {
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus {
+    outline: 2px solid #2980B9;
+    border-color: #2980B9;
+}
+
+/* Improve navigation accessibility */
+.wy-menu-vertical {
+    background-color: #343131;
+}
+
+.wy-menu-vertical .caption-text {
+    color: #fff;
+    font-weight: bold;
+}
+
+.wy-menu-vertical a {
+    color: #d9d9d9;
+    padding: 0.4em 1.5em;
+}
+
+.wy-menu-vertical a:hover,
+.wy-menu-vertical a:focus {
+    background-color: #4e4a4a;
+}
+
+/* Improve mobile accessibility */
+@media screen and (max-width: 768px) {
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+
+    .wy-nav-side {
+        left: -300px;
+    }
+
+    .wy-nav-side.shift {
+        width: 85%;
+        left: 0;
+    }
+}
+
+.theme-background {
+    background: #2980B9;
+}
+
+.theme-background-blue {
+    background: #2980B9;
+}
+
+/* Additional theme styles */
+.wy-nav-side {
+    background: #2980B9;
+}
+
+.wy-side-nav-search {
+    background: #2980B9;
+}
+
+.wy-nav-top {
+    background: #2980B9;
+}
+
+/* Improved accessibility styles */
+.caption[role="heading"][aria-level="2"] {
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+/* Improved spacing and readability */
+.wy-menu-vertical {
+    padding-top: 1em;
+}
+
+.wy-menu-vertical .caption-text {
+    color: #fff;
+}
+
+/* Navigation improvements */
+.wy-nav-side {
+    padding-bottom: 2rem;
+}
+
+.wy-menu-vertical {
+    padding-top: 1rem;
+}
+
+/* Better list spacing */
+.simple li {
+    margin-bottom: 0.5em;
+}
+
+/* Code block improvements */
+.highlight {
+    margin: 1em 0;
+    padding: 1em;
+    border-radius: 4px;
+}
+
+/* Footer improvements */
+.rst-footer-buttons {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px solid #e1e4e5;
+}
+
+/* Print styles */
+@media print {
+    .wy-nav-side {
+        display: none;
+    }
+
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+}
+
+/* Responsive improvements */
+@media screen and (max-width: 768px) {
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+
+    .wy-nav-side {
+        left: -300px;
+    }
+
+    .wy-nav-side.shift {
+        left: 0;
+    }
+}
+
+/* Table cell styles */
+td[style*="width"] {
+    width: 33% !important;
+    vertical-align: top !important;
+}
+
+/* Index table styles */
+.genindextable tr {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.genindextable td {
+    flex: 1 1 33%;
+    min-width: 250px;
+    vertical-align: top;
+}
+
+/* Heading styles with ARIA */
+.caption[role="heading"][aria-level] {
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    color: #404040;
+}
+
+/* Update existing theme styles to remove inline styles */
+.wy-side-nav-search,
+.wy-nav-top,
+nav[data-toggle="wy-nav-shift"],
+.wy-nav-side {
+    background: #2980B9 !important;
+}
+
+/* Index table styles - more specific rules */
+.indextable {
+    width: 100%;
+}
+
+.indextable td {
+    width: 33%;
+    vertical-align: top;
+}
+
+.indextable.genindextable td {
+    width: 33%;
+    vertical-align: top;
+}
+
+/* Navigation styles - more specific */
+.wy-side-nav-search,
+.wy-nav-top,
+nav[data-toggle="wy-nav-shift"] {
+    background-color: #2980B9;
+}
+
+/* Remove all inline background styles */
+[style*="background: #2980B9"] {
+    background: #2980B9 !important;
+}
+
+/* Table cell spacing */
+.indextable td ul {
+    margin: 0;
+    padding-left: 1.5em;
+}
+
+.indextable td ul ul {
+    margin-left: 1em;
+}
+
+/* Ensure consistent table layout */
+.indextable tr {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.indextable td {
+    flex: 1 1 33.333%;
+    min-width: 250px;
+    box-sizing: border-box;
+    padding: 0.5em;
+}
+
+/* Theme-specific styles - consolidated */
+.theme-background,
+.theme-background-blue,
+.wy-side-nav-search,
+.wy-nav-top,
+.wy-nav-side {
+    background: #2980B9 !important;
+}
+
+/* Remove all inline background styles */
+[style*="background: #2980B9"] {
+    background: #2980B9 !important;
+}
+
+/* Improved heading styles */
+.caption[role="heading"][aria-level="2"] {
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    color: #fff;
+}
+
+/* Navigation improvements */
+.wy-nav-side {
+    padding-bottom: 2rem;
+}
+
+.wy-menu-vertical {
+    padding-top: 1rem;
+}
+
+/* Mobile navigation */
+@media screen and (max-width: 768px) {
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+
+    .wy-nav-side {
+        left: -300px;
+    }
+
+    .wy-nav-side.shift {
+        width: 85%;
+        left: 0;
+    }
+}
+
+/* Accessibility and Compatibility Fixes */
+
+/* Fix ARIA heading issues */
+[role="heading"][aria-level] {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+}
+
+/* Remove inline styles */
+.wy-nav-content-wrap,
+.wy-nav-content,
+.wy-nav-side,
+.wy-side-nav-search,
+.wy-nav-top,
+.rst-content table.docutils,
+.rst-content table.field-list {
+    background: none !important;
+    color: inherit !important;
+    border: none !important;
+}
+
+/* Cross-browser text size adjustments */
+html {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Form accessibility improvements */
+input,
+select,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    margin: 0;
+}
+
+/* Form labels */
+label {
+    display: inline-block;
+    margin-bottom: 0.5em;
+}
+
+/* ARIA-compliant form controls */
+[role="search"] input {
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* Cross-browser user selection */
+.rst-content pre {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Cross-browser filter support */
+.wy-side-nav-search input[type="text"] {
+    background-color: rgba(255, 255, 255, 0.9);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#E5FFFFFF, endColorstr=#E5FFFFFF);
+}
+
+/* Improved form focus states */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #2980B9;
+    outline-offset: 2px;
+}
+
+/* Fix orphans and widows */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    orphans: 3;
+    widows: 3;
+}
+
+/* Vendor prefixes for user-drag */
+img {
+    -webkit-user-drag: none;
+    user-drag: none;
+}

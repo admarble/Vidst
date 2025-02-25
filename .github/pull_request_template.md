@@ -68,4 +68,4 @@
 - [ ] I have updated documentation
 - [ ] CI/CD pipeline passes
 - [ ] PR title follows conventional commit format
-- [ ] Branch is up to date with target branch 
+- [ ] Branch is up to date with target branch

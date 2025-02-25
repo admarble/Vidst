@@ -1,0 +1,692 @@
+
+.. py:module:: src.ai.models.twelve_labs.types
+
+   :no-index:
+
+
+
+
+
+Twelve Labs Types
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Classes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+VideoMetadata
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:class:: VideoMetadata
+
+   :module: src.ai.models.twelve_labs.types
+   :no-index:
+
+   Container for video metadata.
+
+   .. py:attribute:: video_id
+
+      :type: str
+      :no-index:
+
+      Unique identifier for the video.
+
+
+
+   .. py:attribute:: index_name
+
+      :type: str
+      :no-index:
+
+      Name of the index containing the video.
+
+
+
+   .. py:attribute:: duration
+
+      :type: float
+      :no-index:
+
+      Duration of the video in seconds.
+
+
+
+   .. py:attribute:: format
+
+      :type: str
+      :no-index:
+
+      Video format (e.g. MP4, AVI).
+
+
+
+   .. py:method:: pop(key: str, default: Any = None) -> Any
+
+      Remove specified key and return the corresponding value.
+
+      :param key: Key to remove
+      :param default: Value to return if key not found
+      :returns: Value associated with key
+
+
+
+   .. py:method:: update(other: Dict[str, Any]) -> None
+
+      Update metadata with values from other dictionary.
+
+      :param other: Dictionary to update from
+
+
+
+TaskOptions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:class:: TaskOptions
+
+   :module: src.ai.models.twelve_labs.types
+   :no-index:
+
+   Configuration options for tasks.
+
+   .. py:attribute:: confidence_threshold
+
+      :type: float
+      :no-index:
+
+      Minimum confidence threshold for results.
+
+
+
+   .. py:attribute:: max_scenes
+
+      :type: int
+      :no-index:
+
+      Maximum number of scenes to detect.
+
+
+
+   .. py:attribute:: language
+
+      :type: str
+      :no-index:
+
+      Language code for transcription.
+
+
+
+   .. py:attribute:: include_metadata
+
+      :type: bool
+      :no-index:
+
+      Whether to include metadata in results.
+
+
+
+   .. py:method:: pop(key: str, default: Any = None) -> Any
+
+      Remove specified key and return the corresponding value.
+
+      :param key: Key to remove
+      :param default: Value to return if key not found
+      :returns: Value associated with key
+
+
+
+   .. py:method:: update(other: Dict[str, Any]) -> None
+
+      Update options with values from other dictionary.
+
+      :param other: Dictionary to update from
+
+
+
+TaskResult
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:class:: TaskResult
+
+   :module: src.ai.models.twelve_labs.types
+   :no-index:
+
+   Result of task processing.
+
+   .. py:attribute:: task_id
+
+      :type: str
+      :no-index:
+
+      Unique identifier for the task.
+
+
+
+   .. py:attribute:: status
+
+      :type: str
+      :no-index:
+
+      Current status of the task.
+
+
+
+   .. py:attribute:: result
+
+      :type: Dict[str, Any]
+      :no-index:
+
+      Task processing result data.
+
+
+
+   .. py:attribute:: error
+
+      :type: Optional[str]
+      :no-index:
+
+      Error message if task failed.
+
+
+
+   .. py:attribute:: video_id
+
+      :type: str
+      :no-index:
+
+      ID of the processed video.
+
+
+
+   .. py:method:: pop(key: str, default: Any = None) -> Any
+
+      Remove specified key and return the corresponding value.
+
+      :param key: Key to remove
+      :param default: Value to return if key not found
+      :returns: Value associated with key
+
+
+
+   .. py:method:: update(other: Dict[str, Any]) -> None
+
+      Update result with values from other dictionary.
+
+      :param other: Dictionary to update from
+
+
+
+SearchResult
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:class:: SearchResult
+
+   :module: src.ai.models.twelve_labs.types
+   :no-index:
+
+   Container for search results.
+
+   .. py:attribute:: video_id
+
+      :type: str
+      :no-index:
+
+      ID of the matched video.
+
+
+
+   .. py:attribute:: confidence
+
+      :type: float
+      :no-index:
+
+      Match confidence score.
+
+
+
+   .. py:attribute:: start_time
+
+      :type: float
+      :no-index:
+
+      Start time of the match.
+
+
+
+   .. py:attribute:: end_time
+
+      :type: float
+      :no-index:
+
+      End time of the match.
+
+
+
+   .. py:attribute:: metadata
+
+      :type: Dict[str, Any]
+
+      Additional metadata about the match.
+
+
+
+   .. py:method:: pop(key: str, default: Any = None) -> Any
+
+      Remove specified key and return the corresponding value.
+
+      :param key: Key to remove
+      :param default: Value to return if key not found
+      :returns: Value associated with key
+
+
+
+   .. py:method:: update(other: Dict[str, Any]) -> None
+
+      Update result with values from other dictionary.
+
+      :param other: Dictionary to update from
+
+
+
+Enums
+
+
+-----
+
+
+
+
+-----
+
+
+
+
+-----
+
+
+
+
+-----
+
+
+
+
+-----
+
+
+
+
+-----
+
+
+
+
+
+
+
+
+
+
+
+
+TaskType
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:class:: TaskType
+
+   :module: src.ai.models.twelve_labs.types
+   :no-index:
+
+   Types of processing tasks supported by Twelve Labs.
+
+   .. py:attribute:: SCENE_DETECTION
+
+      :type: str
+
+      Scene detection task
+
+
+
+   .. py:attribute:: TRANSCRIPTION
+
+      :type: str
+
+      Audio transcription task
+
+
+
+   .. py:attribute:: TEXT_EXTRACTION
+
+      :type: str
+
+      Text extraction from frames task
+
+
+
+Example Usage
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+
+
+
+
+
+
+
+
+.. code-block:: python
+
+      from src.ai.models.twelve_labs.types import TaskType, TaskOptions, VideoMetadata
+
+      Configure task options
+
+
+
+
+
+
+
+
+=
+
+
+
+
+
+=
+
+         confidence_threshold=0.8,
+         max_scenes=100,
+         language="en",
+         include_metadata=True
+      )
+
+      Create video metadata
+
+
+
+
+
+
+
+
+=
+
+
+
+
+
+=
+
+         video_id="video_123",
+         index_name="my_index",
+         duration=120.5,
+         format="mp4"
+      )
+
+      Use task type
+
+
+
+
+
+
+
+
+=
+
+
+
+
+
+=
+
+
+See Also
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+
+
+
+
+
+
+
+
+\* :doc:`/api/ai/models/twelve_labs/model`*
+\* :doc:`/api/ai/models/twelve_labs/exceptions`*

@@ -1,22 +1,21 @@
 """Unit tests for storage components (cache and vector storage)."""
 
 import asyncio
-import json
 import os
-import shutil
 import tempfile
 import threading
 import time
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import MagicMock, mock_open, patch
 
 import numpy as np
 import pytest
 
-from src.core.exceptions import StorageError
-from src.storage.cache import Cache
-from src.storage.vector import VectorStorage
+from video_understanding.core.exceptions import StorageError
+from video_understanding.storage.cache import Cache
+from video_understanding.storage.vector import VectorMetadata, VectorStorage, VectorStorageConfig
 
 # ============================================================================
 # Cache Tests
@@ -24,20 +23,20 @@ from src.storage.vector import VectorStorage
 
 
 @pytest.fixture
-def temp_cache_dir():
+def temp_cache_dir() -> Generator[Path, None, None]:
     """Fixture to create a temporary directory for cache testing."""
     with tempfile.TemporaryDirectory() as temp_dir:
         yield Path(temp_dir)
 
 
 @pytest.fixture
-def cache(temp_cache_dir):
+def cache(temp_cache_dir: Path) -> Cache:
     """Fixture to create a Cache instance with temporary directory."""
     return Cache(cache_dir=temp_cache_dir)
 
 
 @pytest.fixture
-def readonly_cache_dir():
+def readonly_cache_dir() -> Generator[Path, None, None]:
     """Fixture to create a read-only directory for testing permission errors."""
     with tempfile.TemporaryDirectory() as temp_dir:
         dir_path = Path(temp_dir)
@@ -54,59 +53,59 @@ def readonly_cache_dir():
 class TestCache:
     """Test suite for Cache implementation."""
 
-    def test_init_default(self):
+    def test_init_default(self) -> None:
         """Test default cache initialization."""
         cache = Cache()
         assert cache.ttl == 86400  # Default TTL
         assert cache.cache_dir.exists()
         assert cache.cache_dir.is_dir()
 
-    def test_init_custom(self, temp_cache_dir):
+    def test_init_custom(self, temp_cache_dir: Path) -> None:
         """Test cache initialization with custom parameters."""
         custom_ttl = 3600
         cache = Cache(cache_dir=temp_cache_dir, ttl=custom_ttl)
         assert cache.ttl == custom_ttl
         assert cache.cache_dir == temp_cache_dir
 
-    def test_set_get_valid(self, cache):
+    def test_set_get_valid(self, cache: Cache) -> None:
         """Test setting and getting valid cache entries."""
         test_data = {"key1": "value1", "key2": 42}
         cache.set("test_key", test_data)
         result = cache.get("test_key")
         assert result == test_data
 
-    def test_get_nonexistent(self, cache):
+    def test_get_nonexistent(self, cache: Cache) -> None:
         """Test getting non-existent cache entry."""
         assert cache.get("nonexistent") is None
 
-    def test_get_expired(self, cache):
+    def test_get_expired(self, cache: Cache) -> None:
         """Test getting expired cache entry."""
         cache = Cache(ttl=1)  # 1 second TTL
         cache.set("test_key", {"data": "value"})
         time.sleep(1.1)  # Wait for expiration
         assert cache.get("test_key") is None
 
-    def test_invalid_key_type(self, cache):
+    def test_invalid_key_type(self, cache: Cache) -> None:
         """Test error handling for invalid key types."""
         with pytest.raises(StorageError, match="Cache key must be a string"):
-            cache.set(123, {"data": "value"})
+            cache.set(123, {"data": "value"})  # type: ignore
 
         with pytest.raises(StorageError, match="Cache key must be a string"):
-            cache.get(123)
+            cache.get(123)  # type: ignore
 
-    def test_invalid_value_type(self, cache):
+    def test_invalid_value_type(self, cache: Cache) -> None:
         """Test error handling for invalid value types."""
         with pytest.raises(StorageError, match="Cache value must be a dictionary"):
-            cache.set("test_key", "not_a_dict")
+            cache.set("test_key", "not_a_dict")  # type: ignore
 
-    def test_clear(self, cache):
+    def test_clear(self, cache: Cache) -> None:
         """Test clearing all cached data."""
         test_data = {"key1": "value1"}
         cache.set("test_key", test_data)
         cache.clear()
         assert cache.get("test_key") is None
 
-    def test_cleanup(self, cache):
+    def test_cleanup(self, cache: Cache) -> None:
         """Test cleanup of expired entries."""
         cache = Cache(ttl=1)  # 1 second TTL
         cache.set("test_key1", {"data": "value1"})
@@ -117,7 +116,7 @@ class TestCache:
         assert cache.get("test_key1") is None
         assert cache.get("test_key2") is not None
 
-    def test_file_corruption(self, cache):
+    def test_file_corruption(self, cache: Cache) -> None:
         """Test handling of corrupted cache files."""
         # Create a corrupted cache file
         cache_file = cache.cache_dir / "corrupted.json"
@@ -127,7 +126,7 @@ class TestCache:
         with pytest.raises(StorageError, match="Failed to read cache file"):
             cache.get("corrupted")
 
-    def test_permission_errors(self, cache):
+    def test_permission_errors(self, cache: Cache) -> None:
         """Test handling of permission errors."""
         # Mock file for set operation
         mock_file_set = MagicMock()
@@ -155,7 +154,7 @@ class TestCache:
             with pytest.raises(StorageError, match="Failed to cleanup cache"):
                 cache.cleanup()
 
-    def test_file_system_errors(self, cache):
+    def test_file_system_errors(self, cache: Cache) -> None:
         """Test handling of various file system errors."""
         mock_file = MagicMock()
         mock_file.exists.return_value = True
@@ -178,7 +177,7 @@ class TestCache:
             cache.cleanup()  # Should handle gracefully
             cache.clear()  # Should handle gracefully
 
-    def test_file_read_errors(self, cache):
+    def test_file_read_errors(self, cache: Cache) -> None:
         """Test handling of file read errors."""
         # Create a file that exists but can't be read
         unreadable_file = cache.cache_dir / "unreadable.json"
@@ -193,7 +192,7 @@ class TestCache:
             # Restore permissions for cleanup
             os.chmod(unreadable_file, 0o666)
 
-    def test_cleanup_with_invalid_files(self, cache):
+    def test_cleanup_with_invalid_files(self, cache: Cache) -> None:
         """Test cleanup with invalid/unreadable files."""
         # Create an unreadable file
         bad_file = cache.cache_dir / "unreadable.json"
@@ -207,15 +206,15 @@ class TestCache:
             # Restore permissions for cleanup
             os.chmod(bad_file, 0o666)
 
-    def test_concurrent_file_operations(self, cache):
+    def test_concurrent_file_operations(self, cache: Cache) -> None:
         """Test concurrent file operations."""
 
-        def write_operation():
+        def write_operation() -> None:
             for i in range(10):
                 cache.set(f"concurrent_key_{i}", {"data": f"value_{i}"})
                 time.sleep(0.01)
 
-        def read_operation():
+        def read_operation() -> None:
             for i in range(10):
                 cache.get(f"concurrent_key_{i}")
                 time.sleep(0.01)
@@ -231,14 +230,14 @@ class TestCache:
         read_thread.join()
 
     @pytest.mark.asyncio
-    async def test_concurrent_access(self, cache):
+    async def test_concurrent_access(self, cache: Cache) -> None:
         """Test thread safety for concurrent access."""
 
-        async def write_task(key: str, value: Dict[str, Any]):
+        async def write_task(key: str, value: dict[str, Any]) -> None:
             cache.set(key, value)
             await asyncio.sleep(0.1)
 
-        async def read_task(key: str):
+        async def read_task(key: str) -> dict[str, Any] | None:
             return cache.get(key)
 
         # Create concurrent write and read tasks
@@ -254,7 +253,7 @@ class TestCache:
             assert result is not None
             assert result["data"] == f"value{i}"
 
-    def test_get_error_handling(self, cache):
+    def test_get_error_handling(self, cache: Cache) -> None:
         """Test error handling in get method."""
         mock_file = MagicMock()
         mock_file.exists.return_value = True
@@ -265,7 +264,7 @@ class TestCache:
                 with pytest.raises(StorageError, match="Failed to read cache file"):
                     cache.get("test_key")
 
-    def test_cleanup_error_handling(self, cache):
+    def test_cleanup_error_handling(self, cache: Cache) -> None:
         """Test error handling in cleanup method."""
         # Create a file that will cause an error during cleanup
         test_file = cache.cache_dir / "error.json"
@@ -283,191 +282,157 @@ class TestCache:
 
 
 @pytest.fixture
-def vector_storage():
-    """Fixture to create a VectorStorage instance."""
-    return VectorStorage(dimension=4)  # Using small dimension for testing
+def temp_vector_dir() -> Generator[Path, None, None]:
+    """Fixture to create a temporary directory for vector storage testing."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield Path(temp_dir)
+
+
+@pytest.fixture
+def vector_storage(temp_vector_dir: Path) -> VectorStorage:
+    """Fixture to create a VectorStorage instance with temporary directory."""
+    config = VectorStorageConfig(
+        dimension=768,  # Using standard BERT dimension
+        index_path=temp_vector_dir / "index.faiss",
+        metadata_path=temp_vector_dir / "metadata.json",
+    )
+    return VectorStorage(config)
 
 
 class TestVectorStorage:
     """Test suite for VectorStorage implementation."""
 
-    def test_init(self):
-        """Test vector storage initialization."""
-        storage = VectorStorage(dimension=1536)
-        assert storage.dimension == 1536
-        assert len(storage.vectors) == 0
-        assert len(storage.metadata) == 0
+    def test_init_default(self, temp_vector_dir: Path) -> None:
+        """Test default vector storage initialization."""
+        config = VectorStorageConfig(
+            dimension=768,
+            index_path=temp_vector_dir / "index.faiss",
+            metadata_path=temp_vector_dir / "metadata.json",
+        )
+        storage = VectorStorage(config)
+        assert storage.config.dimension == 768
+        assert storage.config.similarity_threshold == 0.8
+        assert storage.config.auto_save is True
 
-    def test_store_retrieve_valid(self, vector_storage):
-        """Test storing and retrieving valid vectors."""
-        vector = np.array([1.0, 2.0, 3.0, 4.0])
-        metadata = {"description": "test vector"}
+    def test_init_custom(self, temp_vector_dir: Path) -> None:
+        """Test vector storage initialization with custom parameters."""
+        config = VectorStorageConfig(
+            dimension=512,
+            index_path=temp_vector_dir / "custom_index.faiss",
+            metadata_path=temp_vector_dir / "custom_metadata.json",
+            similarity_threshold=0.9,
+            auto_save=False,
+        )
+        storage = VectorStorage(config)
+        assert storage.config.dimension == 512
+        assert storage.config.similarity_threshold == 0.9
+        assert storage.config.auto_save is False
 
-        vector_storage.store("test_key", vector, metadata)
+    def test_add_retrieve_embedding(self, vector_storage: VectorStorage) -> None:
+        """Test adding and retrieving embeddings."""
+        # Create test embedding
+        embedding = np.random.randn(768).astype(np.float32)
+        norm = np.linalg.norm(embedding)
+        embedding = (embedding / norm).astype(np.float32)
 
-        retrieved = vector_storage.retrieve("test_key")
-        assert np.array_equal(retrieved, vector)
+        metadata: VectorMetadata = {
+            "type": "scene",
+            "timestamp": "2024-03-20T10:00:00",
+            "model_version": "v1.0",
+            "confidence": 0.95,
+            "source_frame": None,
+            "duration": 5.0,
+        }
 
-        retrieved_metadata = vector_storage.get_metadata("test_key")
+        # Add embedding
+        embedding_id = vector_storage.add_embedding(embedding, metadata)
+
+        # Retrieve and verify
+        retrieved_embedding, retrieved_metadata = vector_storage.retrieve_embedding(
+            embedding_id
+        )
+        np.testing.assert_array_almost_equal(embedding, retrieved_embedding)
         assert retrieved_metadata == metadata
 
-    def test_store_invalid_vector(self, vector_storage):
-        """Test error handling for invalid vectors."""
-        # Test None vector
-        with pytest.raises(StorageError, match="Vector cannot be None"):
-            vector_storage.store("test_key", None)
+    def test_search_similar(self, vector_storage: VectorStorage) -> None:
+        """Test similarity search functionality."""
+        # Create and add test embeddings
+        embeddings = []
+        metadata_list = []
 
-        # Test wrong dimension
-        wrong_dim = np.array([1.0, 2.0])
-        with pytest.raises(StorageError, match="Invalid vector dimension"):
-            vector_storage.store("test_key", wrong_dim)
+        for i in range(5):
+            embedding = np.random.randn(768).astype(np.float32)
+            norm = np.linalg.norm(embedding)
+            embedding = (embedding / norm).astype(np.float32)
+            embeddings.append(embedding)
 
-        # Test invalid type
-        with pytest.raises(StorageError, match="Vector must be a numpy array"):
-            vector_storage.store("test_key", [1.0, 2.0, 3.0, 4.0])
+            metadata: VectorMetadata = {
+                "type": "scene",
+                "timestamp": f"2024-03-20T10:0{i}:00",
+                "model_version": "v1.0",
+                "confidence": 0.9 + i * 0.02,
+                "source_frame": None,
+                "duration": 5.0,
+            }
+            metadata_list.append(metadata)
 
-    def test_retrieve_nonexistent(self, vector_storage):
-        """Test retrieving non-existent vector."""
-        assert vector_storage.retrieve("nonexistent") is None
-        assert vector_storage.get_metadata("nonexistent") is None
+            vector_storage.add_embedding(embedding, metadata)
 
-    def test_search_empty(self, vector_storage):
-        """Test search with empty storage."""
-        query = np.array([1.0, 2.0, 3.0, 4.0])
-        results = vector_storage.search(query)
-        assert len(results) == 0
+        # Search with first embedding as query
+        results = vector_storage.search_similar(embeddings[0], k=3)
 
-    def test_search_invalid_k(self, vector_storage):
-        """Test search with invalid k values."""
-        query = np.array([1.0, 2.0, 3.0, 4.0])
-        results = vector_storage.search(query, k=0)
-        assert len(results) == 0
+        assert len(results) <= 3
+        assert all(isinstance(r["similarity"], float) for r in results)
+        assert all(isinstance(r["distance"], float) for r in results)
+        assert all(isinstance(r["id"], str) for r in results)
+        assert all(isinstance(r["metadata"], dict) for r in results)
 
-        results = vector_storage.search(query, k=-1)
-        assert len(results) == 0
+    def test_delete_embedding(self, vector_storage: VectorStorage) -> None:
+        """Test deleting embeddings."""
+        # Add test embedding
+        embedding = np.random.randn(768).astype(np.float32)
+        norm = np.linalg.norm(embedding)
+        embedding = (embedding / norm).astype(np.float32)
 
-    def test_search_results(self, vector_storage):
-        """Test search results ordering."""
-        # Store some test vectors
-        vectors = {
-            "v1": np.array([1.0, 0.0, 0.0, 0.0]),
-            "v2": np.array([0.0, 1.0, 0.0, 0.0]),
-            "v3": np.array([1.0, 1.0, 0.0, 0.0]) / np.sqrt(2),
+        metadata: VectorMetadata = {
+            "type": "scene",
+            "timestamp": "2024-03-20T10:00:00",
+            "model_version": "v1.0",
+            "confidence": 0.95,
+            "source_frame": None,
+            "duration": 5.0,
         }
 
-        for key, vector in vectors.items():
-            vector_storage.store(key, vector)
+        embedding_id = vector_storage.add_embedding(embedding, metadata)
 
-        # Search with a query vector
-        query = np.array([1.0, 0.0, 0.0, 0.0])
-        results = vector_storage.search(query, k=3)
+        # Delete embedding
+        vector_storage.delete_embedding(embedding_id)
 
-        # Check results order
-        assert len(results) == 3
-        assert results[0][0] == "v1"  # Most similar
-        assert abs(results[0][1] - 1.0) < 1e-6  # Cosine similarity should be 1.0
+        # Verify deletion
+        with pytest.raises(StorageError):
+            vector_storage.retrieve_embedding(embedding_id)
 
-        # v3 should be more similar to query than v2
-        assert results[1][0] == "v3"
-        assert results[2][0] == "v2"
+    def test_clear(self, vector_storage: VectorStorage) -> None:
+        """Test clearing all embeddings."""
+        # Add test embedding
+        embedding = np.random.randn(768).astype(np.float32)
+        norm = np.linalg.norm(embedding)
+        embedding = (embedding / norm).astype(np.float32)
 
-    def test_search_with_zero_vectors(self, vector_storage):
-        """Test search behavior with zero vectors."""
-        # Store a zero vector
-        zero_vector = np.zeros(4)
-        vector_storage.store("zero", zero_vector)
-
-        # Store a normal vector
-        normal_vector = np.array([1.0, 0.0, 0.0, 0.0])
-        vector_storage.store("normal", normal_vector)
-
-        # Search with a query vector
-        query = np.array([1.0, 0.0, 0.0, 0.0])
-        results = vector_storage.search(query, k=2)
-
-        # Zero vector should be excluded from results
-        assert len(results) == 1
-        assert results[0][0] == "normal"
-
-    def test_search_invalid_query(self, vector_storage):
-        """Test search with invalid query vectors."""
-        # Test zero query vector
-        zero_query = np.zeros(4)
-        with pytest.raises(StorageError, match="Cannot normalize zero vector"):
-            vector_storage.search(zero_query)
-
-        # Test None query
-        with pytest.raises(StorageError, match="Query vector cannot be None"):
-            vector_storage.search(None)
-
-        # Test wrong dimension
-        wrong_dim = np.array([1.0, 2.0])
-        with pytest.raises(StorageError, match="Invalid vector dimension"):
-            vector_storage.search(wrong_dim)
-
-    @pytest.mark.asyncio
-    async def test_concurrent_access(self, vector_storage):
-        """Test thread safety for concurrent access."""
-
-        async def store_task(key: str, value: np.ndarray):
-            vector_storage.store(key, value)
-            await asyncio.sleep(0.1)
-
-        async def retrieve_task(key: str):
-            return vector_storage.retrieve(key)
-
-        # Create test vectors
-        vectors = [np.array([float(i), 0.0, 0.0, 0.0]) for i in range(5)]
-
-        # Create concurrent store and retrieve tasks
-        store_tasks = [
-            store_task(f"key{i}", vector) for i, vector in enumerate(vectors)
-        ]
-        retrieve_tasks = [retrieve_task(f"key{i}") for i in range(5)]
-
-        # Run tasks concurrently
-        await asyncio.gather(*store_tasks)
-        results = await asyncio.gather(*retrieve_tasks)
-
-        # Verify results
-        for i, (result, original) in enumerate(zip(results, vectors)):
-            assert np.array_equal(result, original)
-
-    def test_search_edge_cases(self, vector_storage):
-        """Test vector search edge cases."""
-        # Store vectors with different magnitudes
-        vectors = {
-            "small": np.array([1e-10, 0.0, 0.0, 0.0]),
-            "large": np.array([1e10, 0.0, 0.0, 0.0]),
-            "normal": np.array([1.0, 0.0, 0.0, 0.0]),
+        metadata: VectorMetadata = {
+            "type": "scene",
+            "timestamp": "2024-03-20T10:00:00",
+            "model_version": "v1.0",
+            "confidence": 0.95,
+            "source_frame": None,
+            "duration": 5.0,
         }
 
-        for key, vector in vectors.items():
-            vector_storage.store(key, vector)
+        vector_storage.add_embedding(embedding, metadata)
 
-        # Search with a normal query
-        query = np.array([1.0, 0.0, 0.0, 0.0])
-        results = vector_storage.search(query, k=3)
+        # Clear storage
+        vector_storage.clear()
 
-        # All vectors should be normalized, so they should all have the same similarity
-        assert len(results) == 3
-        for key, similarity in results:
-            assert abs(similarity - 1.0) < 1e-6
-
-    def test_vector_normalization_edge_cases(self, vector_storage):
-        """Test vector normalization edge cases."""
-        # Test with moderately small/large vectors (avoiding numerical instability)
-        small_vector = np.array([1e-8, 0.0, 0.0, 0.0])
-        vector_storage.store("small", small_vector)
-
-        large_vector = np.array([1e8, 0.0, 0.0, 0.0])
-        vector_storage.store("large", large_vector)
-
-        # Search with a normal query
-        query = np.array([1.0, 0.0, 0.0, 0.0])
-        results = vector_storage.search(query, k=2)
-
-        # Both vectors should be normalized and have perfect similarity
-        assert len(results) == 2
-        for key, similarity in results:
-            assert abs(similarity - 1.0) < 1e-6
+        # Verify storage is empty
+        results = vector_storage.search_similar(embedding, k=1)
+        assert len(results) == 0

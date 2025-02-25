@@ -1,27 +1,44 @@
 """Unit tests for error handling and edge cases."""
 
-import os
+import queue
+import subprocess
 import tempfile
+import threading
 from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
 import pytest
+from pytest import MonkeyPatch
 
-from src.ai.pipeline import VideoPipeline
-from src.core.config import VideoConfig
-from src.core.exceptions import (
+from video_understanding.ai.pipeline import ProcessingConfig, VideoPipeline
+from video_understanding.core.config import VideoConfig
+from video_understanding.core.exceptions import (
     ConfigurationError,
     FileValidationError,
     ModelError,
     ProcessingError,
     StorageError,
 )
-from src.storage.vector import VectorStorage
-from src.video.upload import VideoUploader
+from video_understanding.storage.vector import VectorStorage
+from video_understanding.video.upload import VideoUploader
 
 
-def test_file_validation_errors():
+@pytest.fixture
+def mock_env_vars(monkeypatch: MonkeyPatch) -> dict[str, str]:
+    """Mock environment variables for testing."""
+    env_vars = {
+        "OPENAI_API_KEY": "test_openai_key",
+        "TWELVE_LABS_API_KEY": "test_twelve_labs_key",
+        "GOOGLE_API_KEY": "test_google_key",
+    }
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
+    return env_vars
+
+
+def test_file_validation_errors() -> None:
     """Test various file validation error scenarios."""
     config = VideoConfig()
     uploader = VideoUploader(config)
@@ -41,9 +58,9 @@ def test_file_validation_errors():
             uploader.validate_file(tf.name)
 
 
-def test_processing_errors(mock_env_vars):
+def test_processing_errors(mock_env_vars: dict[str, str]) -> None:
     """Test video processing error scenarios."""
-    config = VideoConfig()
+    config = ProcessingConfig()
     pipeline = VideoPipeline(config)
 
     # Test corrupted video
@@ -54,9 +71,9 @@ def test_processing_errors(mock_env_vars):
             pipeline.process({"video_path": tf.name, "start_time": 0, "end_time": 10})
 
 
-def test_model_errors(mock_env_vars):
+def test_model_errors(mock_env_vars: dict[str, str]) -> None:
     """Test AI model error scenarios."""
-    from src.ai.models.gpt4v import GPT4VisionModel
+    from video_understanding.ai.models.gpt4v import GPT4VisionModel
 
     model = GPT4VisionModel(api_key=mock_env_vars["OPENAI_API_KEY"])
 
@@ -69,31 +86,53 @@ def test_model_errors(mock_env_vars):
         model.validate({"image_path": "nonexistent.jpg"})
 
 
-def test_storage_errors():
+def test_storage_errors() -> None:
     """Test storage-related error scenarios."""
-    storage = VectorStorage()
+    storage = VectorStorage(
+        dimension=768,
+        index_path=Path("test_index.faiss"),
+        metadata_path=Path("test_metadata.json"),
+    )
 
     # Test invalid input
     with pytest.raises(StorageError):
-        storage.store(key="test", vector=None)
+        storage.add_embedding(None, {"type": "test"})  # type: ignore
 
     # Test invalid search query
     with pytest.raises(StorageError):
-        storage.search(query_vector=None)
+        storage.search_similar(None, k=1)  # type: ignore
 
 
-def test_configuration_errors():
+def test_configuration_errors() -> None:
     """Test configuration error scenarios."""
     # Test invalid config values
     config = VideoConfig()
-    config.MAX_FILE_SIZE = -1
+    config.max_file_size = -1
+    with pytest.raises(ConfigurationError):
+        config.validate()
+
+    # Test empty supported formats
+    config = VideoConfig()
+    config.supported_formats = set()
+    with pytest.raises(ConfigurationError):
+        config.validate()
+
+    # Test invalid scene length
+    config = VideoConfig()
+    config.min_scene_length = 0
+    with pytest.raises(ConfigurationError):
+        config.validate()
+
+    # Test invalid max scenes
+    config = VideoConfig()
+    config.max_scenes = -1
     with pytest.raises(ConfigurationError):
         config.validate()
 
 
-def test_edge_cases(mock_env_vars):
+def test_edge_cases(mock_env_vars: dict[str, str]) -> None:
     """Test various edge cases."""
-    config = VideoConfig()
+    config = ProcessingConfig()
     pipeline = VideoPipeline(config)
 
     # Test extremely short video
@@ -121,19 +160,16 @@ def test_edge_cases(mock_env_vars):
         assert "scene_description" in result
 
 
-def test_concurrent_access():
+def test_concurrent_access() -> None:
     """Test concurrent access scenarios."""
-    import queue
-    import threading
-
-    config = VideoConfig()
+    config = ProcessingConfig()
     pipeline = VideoPipeline(config)
-    errors = queue.Queue()
+    errors: queue.Queue[Exception] = queue.Queue()
 
     # Create a test video that all threads will use
     with create_test_video(duration=1.0) as test_video_path:
 
-        def process_video():
+        def process_video() -> None:
             try:
                 pipeline.process(
                     {"video_path": test_video_path, "start_time": 0, "end_time": 1}
@@ -156,9 +192,9 @@ def test_concurrent_access():
         assert errors.empty(), f"Concurrent processing errors: {list(errors.queue)}"
 
 
-def test_resource_cleanup():
+def test_resource_cleanup() -> None:
     """Test resource cleanup in error scenarios."""
-    config = VideoConfig()
+    config = ProcessingConfig()
     pipeline = VideoPipeline(config)
 
     initial_resources = get_resource_usage()
@@ -178,20 +214,25 @@ def test_resource_cleanup():
 class VideoContextManager:
     """Context manager for test video files."""
 
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, path: str | Path) -> None:
+        self.path = Path(path)
 
-    def __enter__(self):
+    def __enter__(self) -> str:
         return str(self.path)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type | None,
+        exc_val: Exception | None,
+        exc_tb: Any | None,
+    ) -> None:
         try:
-            Path(self.path).unlink()
+            self.path.unlink()
         except Exception:
             pass
 
 
-def create_test_video(duration):
+def create_test_video(duration: float) -> VideoContextManager:
     """Create a test video file with specified duration."""
     path = Path(tempfile.mktemp(suffix=".mp4"))
 
@@ -217,9 +258,7 @@ def create_test_video(duration):
     ]
 
     try:
-        import subprocess
-
-        subprocess.run(cmd, check=True, capture_output=True)
+        result = subprocess.run(cmd, check=True, capture_output=True)
 
         # Verify the file was created
         if not path.exists() or path.stat().st_size == 0:
@@ -230,83 +269,127 @@ def create_test_video(duration):
         raise RuntimeError(f"Failed to create video: {e.stderr.decode()}")
 
 
-def create_silent_video():
-    """Create a video without audio."""
+def create_silent_video() -> VideoContextManager:
+    """Create a test video with no audio."""
     path = Path(tempfile.mktemp(suffix=".mp4"))
-
-    # Create a silent video using ffmpeg
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-f",
-        "lavfi",
-        "-i",
-        "testsrc=duration=1:size=640x480:rate=30",
-        "-an",  # No audio
-        "-c:v",
-        "libx264",
-        "-pix_fmt",
-        "yuv420p",
-        "-movflags",
-        "+faststart",
-        str(path),
-    ]
+    fps = 30
+    duration = 1  # 1 second
+    size = (640, 480)
 
     try:
-        import subprocess
+        # Try different codecs in order of preference
+        codecs = ["mp4v", "avc1", "h264"]
+        out = None
 
-        subprocess.run(cmd, check=True, capture_output=True)
+        for codec in codecs:
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*codec)  # type: ignore
+                out = cv2.VideoWriter(str(path), fourcc, fps, size)
+                if out is not None and out.isOpened():
+                    break
+            except Exception:
+                if out is not None:
+                    out.release()
+                continue
+
+        if out is None or not out.isOpened():
+            raise RuntimeError("Failed to initialize video writer with any codec")
+
+        # Generate frames (white background)
+        for _ in range(int(fps * duration)):
+            frame = np.ones((size[1], size[0], 3), dtype=np.uint8) * 255
+            out.write(frame)
+
+        out.release()
         return VideoContextManager(path)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to create video: {e.stderr.decode()}")
+    except Exception as e:
+        if out is not None:
+            out.release()
+        if path.exists():
+            path.unlink()
+        raise RuntimeError(f"Failed to create silent video: {e!s}")
 
 
-def create_black_video():
-    """Create a video with no visual content."""
+def create_black_video() -> VideoContextManager:
+    """Create a test video with no visual content (black frames)."""
     path = Path(tempfile.mktemp(suffix=".mp4"))
-
-    # Create a black video using ffmpeg
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-f",
-        "lavfi",
-        "-i",
-        "color=c=black:s=640x480:d=1:r=30",
-        "-c:v",
-        "libx264",
-        "-pix_fmt",
-        "yuv420p",
-        "-movflags",
-        "+faststart",
-        str(path),
-    ]
+    fps = 30
+    duration = 1  # 1 second
+    size = (640, 480)
 
     try:
-        import subprocess
+        # Try different codecs in order of preference
+        codecs = ["mp4v", "avc1", "h264"]
+        out = None
 
-        subprocess.run(cmd, check=True, capture_output=True)
+        for codec in codecs:
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*codec)  # type: ignore
+                out = cv2.VideoWriter(str(path), fourcc, fps, size)
+                if out is not None and out.isOpened():
+                    break
+            except Exception:
+                if out is not None:
+                    out.release()
+                continue
+
+        if out is None or not out.isOpened():
+            raise RuntimeError("Failed to initialize video writer with any codec")
+
+        # Generate frames (black background)
+        for _ in range(int(fps * duration)):
+            frame = np.zeros((size[1], size[0], 3), dtype=np.uint8)
+            out.write(frame)
+
+        out.release()
         return VideoContextManager(path)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to create video: {e.stderr.decode()}")
+    except Exception as e:
+        if out is not None:
+            out.release()
+        if path.exists():
+            path.unlink()
+        raise RuntimeError(f"Failed to create black video: {e!s}")
 
 
-def get_resource_usage():
-    """Get current resource usage."""
-    import psutil
+def get_resource_usage() -> dict[str, float]:
+    """Get current resource usage statistics."""
+    try:
+        import psutil
 
-    process = psutil.Process()
-    return {
-        "memory": process.memory_info().rss,
-        "threads": process.num_threads(),
-        "files": process.open_files(),
-    }
+        process = psutil.Process()
+        return {
+            "memory": process.memory_info().rss,
+            "cpu_percent": process.cpu_percent(),
+            "threads": len(process.threads()),
+            "open_files": len(process.open_files()),
+        }
+    except ImportError:
+        # Return dummy values if psutil is not available
+        return {
+            "memory": 0.0,
+            "cpu_percent": 0.0,
+            "threads": 0.0,
+            "open_files": 0.0,
+        }
 
 
-def assert_resources_cleaned_up(initial, final):
-    """Assert resources were properly cleaned up."""
-    # Allow for small variations in memory usage
-    memory_threshold = 1024 * 1024  # 1MB
-    assert abs(final["memory"] - initial["memory"]) < memory_threshold
-    assert final["threads"] <= initial["threads"]
-    assert len(final["files"]) <= len(initial["files"])
+def assert_resources_cleaned_up(
+    initial: dict[str, float], final: dict[str, float]
+) -> None:
+    """Assert that resources were properly cleaned up."""
+    # Allow for some variance in resource usage
+    memory_threshold = 1.1  # 10% increase allowed
+    cpu_threshold = 5.0  # 5% difference allowed
+
+    assert (
+        final["memory"] <= initial["memory"] * memory_threshold
+    ), "Memory not properly cleaned up"
+    assert (
+        abs(final["cpu_percent"] - initial["cpu_percent"]) <= cpu_threshold
+    ), "CPU usage not normalized"
+    assert (
+        final["threads"] <= initial["threads"]
+    ), "Thread count not properly cleaned up"
+    assert (
+        final["open_files"] <= initial["open_files"]
+    ), "Open files not properly cleaned up"

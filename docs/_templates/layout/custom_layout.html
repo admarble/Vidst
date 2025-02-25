@@ -1,0 +1,48 @@
+{% extends "!layout.html" %}
+
+{% block document %}
+<div class="document">
+    {%- block relbar_top %}
+    {%- if theme_show_relbar_top|tobool %}{{ relbar() }}{% endif %}
+    {%- endblock %}
+    {%- block content %}
+    <div class="documentwrapper">
+        {%- if render_sidebar %}
+        <div class="bodywrapper">
+            {%- endif %}
+            <div class="body" role="main">
+                {% block body %}
+                {%- if title %}
+                <h1 role="heading" aria-level="1">{{ title }}</h1>
+                {%- endif %}
+                {{ body }}
+                {% endblock %}
+            </div>
+            {%- if render_sidebar %}
+        </div>
+        {%- endif %}
+    </div>
+    {%- endblock %}
+    {%- block relbar_bottom %}
+    {%- if theme_show_relbar_bottom|tobool %}{{ relbar() }}{% endif %}
+    {%- endblock %}
+</div>
+{% endblock %}
+
+{% block headings %}
+{% macro heading(level, title) %}
+{% if level == 1 %}
+<h1 role="heading" aria-level="1">{{ title }}</h1>
+{% elif level == 2 %}
+<h2 role="heading" aria-level="2">{{ title }}</h2>
+{% elif level == 3 %}
+<h3 role="heading" aria-level="3">{{ title }}</h3>
+{% elif level == 4 %}
+<h4 role="heading" aria-level="4">{{ title }}</h4>
+{% elif level == 5 %}
+<h5 role="heading" aria-level="5">{{ title }}</h5>
+{% else %}
+<h6 role="heading" aria-level="6">{{ title }}</h6>
+{% endif %}
+{% endmacro %}
+{% endblock %}

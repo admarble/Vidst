@@ -1,0 +1,93 @@
+
+Whisper Model
+
+=============
+
+
+
+
+
+
+
+
+
+
+
+.. automodule:: src.ai.models.whisper
+
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :no-index:
+
+Overview
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+The Whisper model implementation for audio transcription and speech recognition using OpenAI's Whisper API.
+
+See Also
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+
+--------
+
+
+
+
+
+
+
+
+\* :ref:`modindex`*

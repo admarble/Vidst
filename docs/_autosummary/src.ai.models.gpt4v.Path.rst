@@ -1,0 +1,106 @@
+
+﻿src.ai.models.gpt4v.Path
+
+=========================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.ai.models.gpt4v
+
+.. autoclass:: Path
+
+   :members:
+   :show-inheritance:
+   :special-memberinherited-members:
+
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+
+      ~Path.__init__
+      ~Path.absolute
+      ~Path.as_posix
+      ~Path.as_uri
+      ~Path.chmod
+      ~Path.cwd
+      ~Path.exists
+      ~Path.expanduser
+      ~Path.from_uri
+      ~Path.full_match
+      ~Path.glob
+      ~Path.group
+      ~Path.hardlink_to
+      ~Path.home
+      ~Path.is_absolute
+      ~Path.is_block_device
+      ~Path.is_char_device
+      ~Path.is_dir
+      ~Path.is_fifo
+      ~Path.is_file
+      ~Path.is_junction
+      ~Path.is_mount
+      ~Path.is_relative_to
+      ~Path.is_reserved
+      ~Path.is_socket
+      ~Path.is_symlink
+      ~Path.iterdir
+      ~Path.joinpath
+      ~Path.lchmod
+      ~Path.lstat
+      ~Path.match
+      ~Path.mkdir
+      ~Path.open
+      ~Path.owner
+      ~Path.read_bytes
+      ~Path.read_text
+      ~Path.readlink
+      ~Path.relative_to
+      ~Path.rename
+      ~Path.replace
+      ~Path.resolve
+      ~Path.rglob
+      ~Path.rmdir
+      ~Path.samefile
+      ~Path.stat
+      ~Path.symlink_to
+      ~Path.touch
+      ~Path.unlink
+      ~Path.walk
+      ~Path.with_name
+      ~Path.with_segments
+      ~Path.with_stem
+      ~Path.with_suffix
+      ~Path.write_bytes
+      ~Path.write_text
+
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+      ~Path.anchor
+      ~Path.drive
+      ~Path.name
+      ~Path.parent
+      ~Path.parents
+      ~Path.parts
+      ~Path.root
+      ~Path.stem
+      ~Path.suffix
+      ~Path.suffixes
+
+Indices and Tables
+
+
+
+
+
+\* :doc:`/modindex`*

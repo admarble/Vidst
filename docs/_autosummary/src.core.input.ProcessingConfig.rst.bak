@@ -1,0 +1,48 @@
+
+﻿src.core.input.ProcessingConfig
+
+================================
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.core.input
+
+.. autoclass:: ProcessingConfig
+
+   :members:
+   :show-inheritance:
+   :special-memberinherited-members:
+
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+
+      ~ProcessingConfig.__init__
+      ~ProcessingConfig.validate
+
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+      ~ProcessingConfig.concurrent_jobs
+      ~ProcessingConfig.max_scenes
+      ~ProcessingConfig.max_video_size
+      ~ProcessingConfig.memory_limit
+      ~ProcessingConfig.min_scene_length
+      ~ProcessingConfig.supported_formats
+
+Indices and Tables
+
+
+
+
+
+\* :doc:`/modindex`*

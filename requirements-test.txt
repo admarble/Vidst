@@ -34,4 +34,4 @@ faiss-cpu==1.7.4  # CPU version for testing
 python-dotenv==1.0.1
 requests-mock==1.11.0
 responses==0.24.1  # For mocking HTTP requests
-tenacity==8.2.3  # For retrying operations 
+tenacity==8.2.3  # For retrying operations

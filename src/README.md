@@ -16,4 +16,4 @@ Please follow the established code style guidelines when adding or modifying cod
 1. Use consistent naming conventions
 2. Write clear comments and documentation
 3. Follow the project's architectural patterns
-4. Include appropriate error handling 
+4. Include appropriate error handling

@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_basic_truth():
     """A simple test to verify our test infrastructure"""
     assert True

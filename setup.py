@@ -1,15 +1,21 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="video-understanding-ai",
+    name="video_understanding",
     version="0.1.0",
-    packages=find_packages(),
-    python_requires=">=3.10",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     install_requires=[
-        "pytest>=7.0.0",
-        "pytest-cov>=4.0.0",
-        "black>=22.0.0",
-        "isort>=5.0.0",
-        "coverage-badge>=1.1.0",
+        "numpy",
+        "opencv-python",
+        "pillow",
+        "torch",
+        "tensorflow",
+        "scikit-learn",
+        "pytest",
+        "pytest-cov",
+        "pytest-asyncio",
+        "aiohttp",
     ],
+    python_requires=">=3.10",
 )

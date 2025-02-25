@@ -1,126 +1,144 @@
 """Unit tests for base AI model."""
 
-import time
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.ai.models.base import BaseModel
-from src.core.exceptions import ModelError
+from video_understanding.ai.exceptions import ModelError
+from video_understanding.ai.models.base import BaseModel
 
 
 class TestModel(BaseModel):
     """Test implementation of BaseModel."""
 
-    def __init__(self):
-        self.cleanup_called = False
+    cleanup_called = False
 
-    def process(self, input_data):
+    async def process(self, input_data: dict[str, Any]) -> dict[str, Any]:
+        """Process input data."""
         return {"result": "processed"}
 
-    def validate(self, input_data):
+    def validate(self, input_data: dict[str, Any]) -> bool:
+        """Validate input data."""
         return True
 
-    def _cleanup_resources(self):
+    def _cleanup_resources(self) -> None:
+        """Clean up resources."""
         self.cleanup_called = True
 
+    async def close(self) -> None:
+        """Clean up model resources."""
+        self._cleanup_resources()
 
-def test_validate_input():
-    """Test input validation."""
+
+@pytest.fixture
+def test_model():  # pylint: disable=redefined-outer-name
+    """Fixture to create a fresh TestModel instance."""
     model = TestModel()
+    model.cleanup_called = False
+    return model
 
+
+def test_validate_input(test_model):  # pylint: disable=redefined-outer-name
+    """Test input validation."""
     # Test None input
     with pytest.raises(ValueError, match="Input cannot be None or empty"):
-        model.validate_input(None)
+        test_model.validate_input(None)
 
     # Test empty string
     with pytest.raises(ValueError, match="Input cannot be None or empty"):
-        model.validate_input("")
+        test_model.validate_input("")
 
     # Test valid input
-    model.validate_input("valid input")
-    model.validate_input(123)
-    model.validate_input({"key": "value"})
+    test_model.validate_input("valid input")
+    test_model.validate_input(123)
+    test_model.validate_input({"key": "value"})
 
 
-def test_retry_with_backoff_success():
+def test_retry_with_backoff_success(test_model):  # pylint: disable=redefined-outer-name
     """Test successful retry with backoff."""
-    model = TestModel()
     mock_func = MagicMock(return_value="success")
 
-    result = model.retry_with_backoff(mock_func)
+    result = test_model.retry_with_backoff(mock_func)
     assert result == "success"
     assert mock_func.call_count == 1
 
 
-def test_retry_with_backoff_retry_success():
+def test_retry_with_backoff_retry_success(
+    test_model,
+):  # pylint: disable=redefined-outer-name
     """Test retry succeeds after failures."""
-    model = TestModel()
     mock_func = MagicMock(
         side_effect=[ValueError("fail"), ValueError("fail"), "success"]
     )
 
     with patch("time.sleep") as mock_sleep:
-        result = model.retry_with_backoff(mock_func)
+        result = test_model.retry_with_backoff(mock_func)
         assert result == "success"
         assert mock_func.call_count == 3
         assert mock_sleep.call_count == 2
 
 
-def test_retry_with_backoff_max_retries():
+def test_retry_with_backoff_max_retries(
+    test_model,
+):  # pylint: disable=redefined-outer-name
     """Test max retries exceeded."""
-    model = TestModel()
     mock_func = MagicMock(side_effect=ValueError("fail"))
 
     with (
         patch("time.sleep"),
         pytest.raises(ModelError, match="Failed after 3 attempts"),
     ):
-        model.retry_with_backoff(mock_func)
+        test_model.retry_with_backoff(mock_func)
         assert mock_func.call_count == 3
 
 
-def test_retry_with_backoff_custom_params():
+def test_retry_with_backoff_custom_params(
+    test_model,
+):  # pylint: disable=redefined-outer-name
     """Test retry with custom parameters."""
-    model = TestModel()
     mock_func = MagicMock(side_effect=[ValueError("fail"), "success"])
 
     with patch("time.sleep") as mock_sleep:
-        result = model.retry_with_backoff(mock_func, max_retries=5, initial_delay=0.5)
+        result = test_model.retry_with_backoff(
+            mock_func, max_retries=5, initial_delay=0.5
+        )
         assert result == "success"
         assert mock_func.call_count == 2
         mock_sleep.assert_called_once_with(0.5)
 
 
-def test_process_with_cleanup_success():
+def test_process_with_cleanup_success(
+    test_model,
+):  # pylint: disable=redefined-outer-name
     """Test successful processing with cleanup."""
-    model = TestModel()
     mock_func = MagicMock(return_value="success")
 
-    result = model.process_with_cleanup(mock_func)
+    result = test_model.process_with_cleanup(mock_func)
     assert result == "success"
-    assert model.cleanup_called
+    assert test_model.cleanup_called
     assert mock_func.call_count == 1
 
 
-def test_process_with_cleanup_error():
+def test_process_with_cleanup_error(test_model):  # pylint: disable=redefined-outer-name
     """Test cleanup on error."""
-    model = TestModel()
     mock_func = MagicMock(side_effect=ValueError("error"))
 
     with pytest.raises(ValueError, match="error"):
-        model.process_with_cleanup(mock_func)
-    assert model.cleanup_called
+        test_model.process_with_cleanup(mock_func)
+    assert test_model.cleanup_called
     assert mock_func.call_count == 1
 
 
 def test_abstract_methods():
     """Test abstract method enforcement."""
-    # Attempt to instantiate abstract class
-    with pytest.raises(TypeError):
-        BaseModel()
+    # Test that BaseModel is properly marked as abstract
+    assert hasattr(BaseModel, "__abstractmethods__")
+    abstract_methods = BaseModel.__abstractmethods__
+    assert "process" in abstract_methods
+    assert "validate" in abstract_methods
 
-    # Test concrete implementation
+    # Test concrete implementation works
     model = TestModel()
     assert model.process({"test": "data"}) == {"result": "processed"}
     assert model.validate({"test": "data"}) is True

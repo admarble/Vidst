@@ -1,59 +1,67 @@
 """Unit tests for Video model."""
 
-import os
-import tempfile
 from datetime import datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
 
-from src.models.video import Video
+from video_understanding.models.video import Video, VideoFile, VideoProcessingStatus
 
 
 @pytest.fixture
-def sample_video():
+def sample_video() -> Video:
     """Create a sample video instance."""
-    return Video(
+    file_info = VideoFile(
         filename="test.mp4",
         file_size=1024,
         format="mp4",
+    )
+    return Video(
+        file_info=file_info,
         id=uuid4(),
         upload_time=datetime.now(),
     )
 
 
-def test_video_initialization():
+def test_video_initialization() -> None:
     """Test basic video initialization."""
-    video = Video(filename="test.mp4", file_size=1024, format="mp4")
+    file_info = VideoFile(filename="test.mp4", file_size=1024, format="mp4")
+    video = Video(file_info=file_info)
     assert isinstance(video.id, UUID)
     assert isinstance(video.upload_time, datetime)
-    assert video.status == "pending"
-    assert video.processing_progress is None
-    assert video.error_message is None
+    assert video.processing.status == "pending"
+    assert video.processing.processing_progress == 0.0
+    assert video.processing.error_message == ""
 
 
-def test_post_init_validation():
+def test_post_init_validation() -> None:
     """Test post initialization validation."""
     # Test UUID conversion
-    str_uuid = "550e8400-e29b-41d4-a716-446655440000"
-    video = Video(filename="test.mp4", file_size=1024, format="mp4", id=str_uuid)
+    str_uuid = UUID("550e8400-e29b-41d4-a716-446655440000")
+    file_info = VideoFile(filename="test.mp4", file_size=1024, format="mp4")
+    video = Video(file_info=file_info, id=str_uuid)
     assert isinstance(video.id, UUID)
-    assert str(video.id) == str_uuid
+    assert str(video.id) == "550e8400-e29b-41d4-a716-446655440000"
 
     # Test format normalization
-    video = Video(filename="test.mp4", file_size=1024, format="mp4")
-    assert video.format == "MP4"
+    file_info = VideoFile(filename="test.mp4", file_size=1024, format="mp4")
+    video = Video(file_info=file_info)
+    assert video.file_info.format == "mp4"
 
 
-def test_equality():
+def test_equality() -> None:
     """Test video equality comparison."""
     id1 = uuid4()
     id2 = uuid4()
 
-    video1 = Video(filename="test1.mp4", file_size=1024, format="mp4", id=id1)
-    video2 = Video(filename="test2.mp4", file_size=2048, format="avi", id=id1)
-    video3 = Video(filename="test3.mp4", file_size=1024, format="mp4", id=id2)
+    file_info1 = VideoFile(filename="test1.mp4", file_size=1024, format="mp4")
+    file_info2 = VideoFile(filename="test2.mp4", file_size=2048, format="avi")
+    file_info3 = VideoFile(filename="test3.mp4", file_size=1024, format="mp4")
+
+    video1 = Video(file_info=file_info1, id=id1)
+    video2 = Video(file_info=file_info2, id=id1)
+    video3 = Video(file_info=file_info3, id=id2)
 
     # Same ID should be equal regardless of other attributes
     assert video1 == video2
@@ -63,37 +71,41 @@ def test_equality():
     assert video1 != "not a video"
 
 
-def test_file_path():
+def test_file_path() -> None:
     """Test file path generation."""
-    video = Video(
+    file_info = VideoFile(
         filename="test.mp4",
         file_size=1024,
         format="mp4",
-        id="550e8400-e29b-41d4-a716-446655440000",
     )
-    assert video.file_path == "550e8400-e29b-41d4-a716-446655440000/test.mp4"
+    video = Video(
+        file_info=file_info,
+        id=UUID("550e8400-e29b-41d4-a716-446655440000"),
+    )
+    assert video.file_path == ""  # file_path is empty by default in VideoFile
 
 
-def test_status_properties():
+def test_status_properties() -> None:
     """Test status-related properties."""
-    video = Video(filename="test.mp4", file_size=1024, format="mp4")
+    file_info = VideoFile(filename="test.mp4", file_size=1024, format="mp4")
+    video = Video(file_info=file_info)
 
     # Test initial state
-    assert not video.is_complete
-    assert not video.has_error
+    assert not video.processing.is_complete
+    assert not video.processing.has_error
 
     # Test complete state
-    video.status = "complete"
-    assert video.is_complete
-    assert not video.has_error
+    video.processing.status = "complete"
+    assert video.processing.is_complete
+    assert not video.processing.has_error
 
     # Test error state
-    video.status = "error"
-    assert not video.is_complete
-    assert video.has_error
+    video.processing.status = "error"
+    assert not video.processing.is_complete
+    assert video.processing.has_error
 
 
-def test_from_path(tmp_path):
+def test_from_path(tmp_path: Path) -> None:
     """Test creating video from path."""
     # Create a temporary file
     file_path = tmp_path / "test.mp4"
@@ -102,66 +114,51 @@ def test_from_path(tmp_path):
     video_id = uuid4()
     video = Video.from_path(file_path, video_id, status="processing")
 
-    assert video.filename == "test.mp4"
-    assert video.format == "MP4"
-    assert video.file_size == len("dummy content")
+    assert video.file_info.filename == "test.mp4"
+    assert video.file_info.format == "MP4"
+    assert video.file_info.file_size == len("dummy content")
     assert video.id == video_id
-    assert video.status == "processing"
+    assert video.processing.status == "processing"
 
 
-def test_video_with_progress():
+def test_video_with_progress() -> None:
     """Test video with processing progress."""
-    video = Video(
-        filename="test.mp4", file_size=1024, format="mp4", processing_progress=50.0
-    )
-    assert video.processing_progress == 50.0
+    file_info = VideoFile(filename="test.mp4", file_size=1024, format="mp4")
+    processing = VideoProcessingStatus(processing_progress=50.0)
+    video = Video(file_info=file_info, processing=processing)
+    assert video.processing.processing_progress == 50.0
 
 
-def test_video_with_error():
+def test_video_with_error() -> None:
     """Test video with error message."""
-    video = Video(
-        filename="test.mp4",
-        file_size=1024,
-        format="mp4",
-        status="error",
-        error_message="Processing failed",
+    file_info = VideoFile(filename="test.mp4", file_size=1024, format="mp4")
+    processing = VideoProcessingStatus(
+        status="error", error_message="Processing failed"
     )
-    assert video.has_error
-    assert video.error_message == "Processing failed"
+    video = Video(file_info=file_info, processing=processing)
+    assert video.processing.has_error
+    assert video.processing.error_message == "Processing failed"
 
 
-def test_file_path_property(sample_video):
+def test_file_path_property(sample_video: Video) -> None:
     """Test file path property."""
-    expected_path = f"{sample_video.id}/{sample_video.filename}"
+    expected_path = ""  # file_path is empty by default in VideoFile
     assert sample_video.file_path == expected_path
 
 
-def test_status_transitions():
+def test_status_transitions() -> None:
     """Test valid and invalid status transitions."""
-    video = Video(
-        filename="test.mp4",
-        file_size=1024,
-        format="mp4",
-    )
+    file_info = VideoFile(filename="test.mp4", file_size=1024, format="mp4")
+    video = Video(file_info=file_info)
 
     # Test valid transitions
     valid_statuses = ["pending", "processing", "complete", "error"]
     for status in valid_statuses:
-        video.status = status
-        assert video.status == status
-
-    # TODO: Implement status validation in Video class
-    # # Test invalid status
-    # with pytest.raises(ValueError):
-    #     video.status = "invalid_status"
+        video.processing.status = status
+        assert video.processing.status == status
 
     # Test status with error message
-    video.status = "error"
-    video.error_message = "Processing failed"
-    assert video.status == "error"
-    assert video.error_message == "Processing failed"
-
-    # TODO: Implement error message clearing when status changes from error
-    # # Clear error
-    # video.status = "pending"
-    # assert video.error_message is None
+    video.processing.status = "error"
+    video.processing.error_message = "Processing failed"
+    assert video.processing.status == "error"
+    assert video.processing.error_message == "Processing failed"

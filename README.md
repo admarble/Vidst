@@ -51,4 +51,4 @@ MIT License
 - `video_upload.md` - Video Upload and Validation
 - `setup.md` - Project Setup and Configuration
 - `guides/` - User guides and tutorials
-- `development/` - Development documentation 
+- `development/` - Development documentation

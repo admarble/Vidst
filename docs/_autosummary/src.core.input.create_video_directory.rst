@@ -1,0 +1,18 @@
+
+﻿src.core.input.create_video_directory
+
+========================================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.core.input
+
+.. autofunction:: create_video_directory
