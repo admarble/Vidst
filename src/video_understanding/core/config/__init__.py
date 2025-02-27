@@ -4,6 +4,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..exceptions import ConfigurationError
+from .credentials import (
+    CredentialError,
+    find_env_file,
+    load_credentials,
+    validate_credentials,
+    get_service_credentials,
+    get_all_credentials,
+)
 
 
 @dataclass
@@ -88,4 +96,13 @@ class VideoConfig:
         return format_.upper() in {fmt.upper() for fmt in self.supported_formats}
 
 
-__all__ = ["ProcessingConfig", "VideoConfig"]
+__all__ = [
+    "ProcessingConfig",
+    "VideoConfig",
+    "CredentialError",
+    "find_env_file",
+    "load_credentials",
+    "validate_credentials",
+    "get_service_credentials",
+    "get_all_credentials",
+]
