@@ -1,0 +1,194 @@
+name: Project Board Automation
+
+on:
+  issues:
+    types: [opened, closed, reopened, assigned, labeled, unlabeled]
+  pull_request:
+    types: [opened, closed, reopened, ready_for_review, converted_to_draft]
+
+jobs:
+  project_automation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issues and PRs to project
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const event = context.payload;
+            
+            // Function to get project ID (you'll need to replace with your actual project number)
+            async function getProjectId() {
+              const response = await github.rest.projects.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open'
+              });
+              
+              // Replace 'Vidst Development' with your project name
+              const project = response.data.find(p => p.name === 'Vidst Development');
+              return project ? project.id : null;
+            }
+            
+            // Function to get column IDs
+            async function getColumnIds(projectId) {
+              const response = await github.rest.projects.listColumns({
+                project_id: projectId
+              });
+              
+              // Create a map of column names to IDs
+              const columns = {};
+              response.data.forEach(column => {
+                columns[column.name.toLowerCase()] = column.id;
+              });
+              
+              return columns;
+            }
+            
+            // Handle issue events
+            async function handleIssueEvent() {
+              const projectId = await getProjectId();
+              if (!projectId) {
+                console.log('Project not found');
+                return;
+              }
+              
+              const columnIds = await getColumnIds(projectId);
+              
+              if (event.action === 'opened') {
+                // Add new issue to Backlog/Todo column
+                if (columnIds['backlog'] || columnIds['todo']) {
+                  const columnId = columnIds['backlog'] || columnIds['todo'];
+                  await github.rest.projects.createCard({
+                    column_id: columnId,
+                    content_id: event.issue.id,
+                    content_type: 'Issue'
+                  });
+                  console.log(`Added issue #${event.issue.number} to Backlog/Todo column`);
+                }
+              } else if (event.action === 'assigned' && (columnIds['in progress'] || columnIds['ready'])) {
+                // Move assigned issue to In Progress/Ready column
+                const columnId = columnIds['ready'] || columnIds['in progress'];
+                
+                // First, find the current card
+                const cards = await github.paginate(github.rest.projects.listCards, {
+                  column_id: Object.values(columnIds)
+                });
+                
+                const issueCard = cards.find(card => {
+                  return card.content_url && card.content_url.endsWith(`/issues/${event.issue.number}`);
+                });
+                
+                if (issueCard) {
+                  await github.rest.projects.moveCard({
+                    card_id: issueCard.id,
+                    position: 'top',
+                    column_id: columnId
+                  });
+                  console.log(`Moved issue #${event.issue.number} to Ready/In Progress column`);
+                }
+              } else if (event.action === 'closed' && columnIds['done']) {
+                // Move closed issue to Done column
+                const cards = await github.paginate(github.rest.projects.listCards, {
+                  column_id: Object.values(columnIds)
+                });
+                
+                const issueCard = cards.find(card => {
+                  return card.content_url && card.content_url.endsWith(`/issues/${event.issue.number}`);
+                });
+                
+                if (issueCard) {
+                  await github.rest.projects.moveCard({
+                    card_id: issueCard.id,
+                    position: 'top',
+                    column_id: columnIds['done']
+                  });
+                  console.log(`Moved issue #${event.issue.number} to Done column`);
+                }
+              }
+            }
+            
+            // Handle PR events
+            async function handlePrEvent() {
+              const projectId = await getProjectId();
+              if (!projectId) {
+                console.log('Project not found');
+                return;
+              }
+              
+              const columnIds = await getColumnIds(projectId);
+              
+              if (event.action === 'opened' || event.action === 'ready_for_review') {
+                // Add new PR to Code Review column
+                if (columnIds['code review'] || columnIds['review']) {
+                  const columnId = columnIds['code review'] || columnIds['review'];
+                  await github.rest.projects.createCard({
+                    column_id: columnId,
+                    content_id: event.pull_request.id,
+                    content_type: 'PullRequest'
+                  });
+                  console.log(`Added PR #${event.pull_request.number} to Code Review column`);
+                  
+                  // If PR contains "Closes #X" or "Fixes #X", also move that issue
+                  const bodyMatch = event.pull_request.body.match(/(?:closes|fixes|resolves)\s+#(\d+)/i);
+                  if (bodyMatch && bodyMatch[1]) {
+                    const issueNumber = bodyMatch[1];
+                    console.log(`PR mentions issue #${issueNumber}, updating its status`);
+                    
+                    // Find cards for this issue
+                    const cards = await github.paginate(github.rest.projects.listCards, {
+                      column_id: Object.values(columnIds)
+                    });
+                    
+                    const issueCard = cards.find(card => {
+                      return card.content_url && card.content_url.endsWith(`/issues/${issueNumber}`);
+                    });
+                    
+                    if (issueCard && columnIds['in progress']) {
+                      await github.rest.projects.moveCard({
+                        card_id: issueCard.id,
+                        position: 'top',
+                        column_id: columnIds['in progress']
+                      });
+                      console.log(`Moved issue #${issueNumber} to In Progress column`);
+                    }
+                  }
+                }
+              } else if (event.action === 'closed' && event.pull_request.merged) {
+                // If PR was merged, move linked issues to Done
+                const bodyMatch = event.pull_request.body.match(/(?:closes|fixes|resolves)\s+#(\d+)/i);
+                if (bodyMatch && bodyMatch[1] && columnIds['done']) {
+                  const issueNumber = bodyMatch[1];
+                  console.log(`Merged PR mentions issue #${issueNumber}, marking as done`);
+                  
+                  // Find cards for this issue
+                  const cards = await github.paginate(github.rest.projects.listCards, {
+                    column_id: Object.values(columnIds)
+                  });
+                  
+                  const issueCard = cards.find(card => {
+                    return card.content_url && card.content_url.endsWith(`/issues/${issueNumber}`);
+                  });
+                  
+                  if (issueCard) {
+                    await github.rest.projects.moveCard({
+                      card_id: issueCard.id,
+                      position: 'top',
+                      column_id: columnIds['done']
+                    });
+                    console.log(`Moved issue #${issueNumber} to Done column because PR was merged`);
+                  }
+                }
+              }
+            }
+            
+            // Main execution
+            try {
+              if (event.issue) {
+                await handleIssueEvent();
+              } else if (event.pull_request) {
+                await handlePrEvent();
+              }
+            } catch (error) {
+              console.error(`Error processing event: ${error}`);
+            }

@@ -1,0 +1,82 @@
+# Gitignore for backup directory
+# Ignore all binary and build files, but keep important markdown docs
+
+# Python related
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.pytest_cache/
+**/.coverage
+**/.tox/
+**/.nox/
+**/.hypothesis/
+**/.egg-info/
+**/.eggs/
+**/.installed.cfg
+**/*.egg
+
+# Documentation build artifacts
+**/_build/
+**/_doctrees/
+**/*.doctree
+**/_autosummary/
+**/.ipynb_checkpoints/
+**/docs/_autosummary/**/*.rst
+**/docs/_autosummary/**/*.rst.bak
+**/docs/_build/**
+**/generated/
+
+# Binary files
+**/*.pickle
+**/*.pkl
+**/*.h5
+**/*.pt
+**/*.pth
+**/*.onnx
+**/*.pb
+**/*.tflite
+**/*.mlmodel
+**/*.caffemodel
+**/*.hdf5
+**/*.npz
+**/*.npy
+**/*.bin
+**/*.ckpt
+**/*.joblib
+**/*.sav
+
+# Image files
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.gif
+**/*.svg
+**/*.ico
+**/*.bmp
+**/*.tif
+**/*.tiff
+**/*.webp
+
+# Media files
+**/*.mp4
+**/*.avi
+**/*.mov
+**/*.mkv
+**/*.webm
+**/*.flv
+**/*.wmv
+**/*.mp3
+**/*.wav
+**/*.ogg
+**/*.flac
+
+# Exceptions - Allow tracking for important documentation
+!README*.md
+!PRE_REFACTOR_BACKUP.md
+!**/README*.md
+!**/*.md
+!refactor/07_backup/README_BACKUP.md
+
+# Ignore symbolic link but not the actual directories
+**/PRE_REFACTOR_BACKUP
