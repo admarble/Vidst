@@ -1,0 +1,18 @@
+
+﻿src.ai.models.twelve_labs.exceptions.TwelveLabsAuthError
+
+==========================================================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.ai.models.twelve_labs.exceptions
+
+.. autoexception:: TwelveLabsAuthError

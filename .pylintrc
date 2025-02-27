@@ -1,0 +1,16 @@
+[MASTER]
+ignore=docs
+ignore-patterns=
+
+[MESSAGES CONTROL]
+disable=C0111  # missing-docstring
+
+[FORMAT]
+max-line-length=88  # Match black's default
+
+[BASIC]
+good-names=i,j,k,ex,Run,_,id,fp
+
+[MISCELLANEOUS]
+# List of note tags to take into consideration
+notes=FIXME,XXX,TODO

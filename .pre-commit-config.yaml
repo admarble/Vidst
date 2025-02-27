@@ -1,0 +1,44 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: fix-docs-formatting
+        name: Fix documentation formatting
+        entry: python scripts/fix_rst_underlines.py
+        language: python
+        additional_dependencies: ['pyyaml>=5.1']
+        files: \.(rst|yml)$
+        pass_filenames: false
+
+-   repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+    -   id: black
+        language_version: python3.10
+
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.1
+    hooks:
+    -   id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: trailing-whitespace
+        exclude: ^docs/_build/
+    -   id: end-of-file-fixer
+        exclude: ^docs/_build/
+    -   id: check-yaml
+        exclude: ^docs/_build/
+    -   id: check-added-large-files
+        exclude: ^docs/_build/
+        args: ['--maxkb=500']
+    -   id: debug-statements
+
+-   repo: https://github.com/pycqa/doc8
+    rev: v1.1.1
+    hooks:
+    -   id: doc8
+        args: [--ignore=D001]  # Ignore line length errors
+        files: \.rst$
+        exclude: ^docs/_build/

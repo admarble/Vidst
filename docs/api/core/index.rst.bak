@@ -1,0 +1,410 @@
+
+Core API
+
+========
+
+
+
+
+
+
+
+
+
+
+Overview
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+The core module provides the fundamental building blocks for video processing and analysis.
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: Components
+
+   processing
+   input
+   output
+   config
+   exceptions
+   metrics
+   logging
+
+Input Processing
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+The input module handles video file validation and preprocessing:
+
+
+
+
+
+\* Video metadata extraction*
+
+
+---------------------------
+
+
+
+
+Processing Pipeline
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+The processing module manages video analysis workflow:
+
+
+
+
+\* Frame extraction*
+
+
+
+
+
+\* Task orchestration*
+
+Output Handling
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+The output module formats and delivers processing results:
+
+
+
+
+\* Data serialization*
+
+
+
+
+
+
+Configuration
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+The config module provides system-wide settings:
+
+
+
+
+\* Storage settings*
+
+
+
+
+
+
+Error Handling
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+The exceptions module implements error management:
+
+
+
+
+\* Error recovery*
+
+
+
+
+
+
+Metrics and Logging
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+
+-------------------
+
+
+
+System monitoring and debugging tools:
+
+
+
+
+\* Operation logging*
+
+
+
+
+
+
+Integration Points
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+Core module integrations:
+
+
+
+
+\* AI models*
+
+
+
+
+
+
+Indices and Tables
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+
+
+\* :ref:`modindex`*
+
+
+
+
+
+Core Components
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. automodule:: src.core
+
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. toctree::
+
+   :maxdepth: 2
+
+   config
+   exceptions
+   input
+   output
+   processing

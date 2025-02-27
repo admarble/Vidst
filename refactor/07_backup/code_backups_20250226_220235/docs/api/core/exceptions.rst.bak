@@ -1,0 +1,693 @@
+
+Exception Handling
+
+==================
+
+
+
+
+
+
+
+
+
+
+Overview
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+
+--------
+
+
+
+Comprehensive exception handling system for managing errors across the video processing pipeline.
+
+Exception Categories
+
+
+--------------------
+
+
+
+
+--------------------
+
+
+
+
+--------------------
+
+
+
+
+--------------------
+
+
+
+
+--------------------
+
+
+
+
+
+
+
+Processing Errors
+
+
+-----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:class:: VideoProcessingError
+
+   :no-index:
+
+   General video processing failures
+
+.. py:class:: SceneDetectionError
+
+   :no-index:
+
+   Scene detection failures
+
+.. py:class:: TranscriptionError
+
+   :no-index:
+
+   Audio transcription failures
+
+
+
+
+Storage Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. py:class:: StorageConnectionError
+
+   :no-index:
+
+   Database connection failures
+
+.. py:class:: StorageWriteError
+
+   :no-index:
+
+   Write operation failures
+
+.. py:class:: StorageReadError
+
+   :no-index:
+
+   Read operation failures
+
+
+
+
+Configuration Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Configuration-related errors:
+
+
+
+
+* ``_ValidationErro```_`r`_`_ - Configuration validation failure*s*`_*`*
+
+
+
+
+
+
+
+
+API Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+External API interaction errors:
+
+
+
+
+* ``_APIResponseErro```_`r`_`_ - Invalid API response*s*`_*`*
+
+
+
+
+
+
+
+
+
+Resource Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Resource management errors:
+
+
+
+
+* ``_ResourceExhaustedErro```_`r`_`_ - Resource limits exceede*d*`_*`*
+
+
+
+
+
+
+
+
+Validation Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Input validation errors:
+
+
+
+
+* ``_FormatValidationErro```_`r`_`_ - Invalid forma*t*`_*`*
+
+
+
+
+
+
+
+
+System Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+System-level errors:
+
+
+
+
+* ``_InitializationErro```_`r`_`_ - Startup failure*s*`_*`*
+
+
+
+
+
+
+
+
+
+Model Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+AI model-related errors:
+
+
+
+
+* ``_ModelInferenceErro```_`r`_`_ - Inference failure*s*`_*`*
+
+
+
+
+
+
+
+
+Pipeline Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Pipeline orchestration errors:
+
+
+
+
+* ``_StageErro```_`r`_`_ - Stage execution failure*s*`_*`*
+
+
+
+
+
+Error Handling Utilities
+
+
+------------------------
+
+
+
+
+------------------------
+
+
+
+
+------------------------
+
+
+
+
+------------------------
+
+
+
+
+------------------------
+
+
+
+Common utilities for error handling:
+
+
+
+
+* Error context managemen*t**
+
+
+
+
+
+Error Mapping
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+
+-------------
+
+
+
+Guidelines for mapping between different error types:
+
+
+
+
+* Error categorizatio*n**
+
+
+
+
+
+Usage Examples
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+
+--------------
+
+
+
+
+
+
+Basic Exception Handling
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. code-block:: python
+
+      try:
+         process_video(video_path)
+      except VideoProcessingError as e:
+         handle_processing_error(e)
+      except StorageError as e:
+         handle_storage_error(e)
+
+
+
+
+Error Conversion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. code-block:: python
+
+      try:
+         external_api_call()
+      except ExternalAPIError as e:
+         raise APIError.from_external(e)
+
+
+
+
+File Validation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. code-block:: python
+
+      try:
+         validate_video_file(file_path)
+      except ValidationError as e:
+         log_validation_error(e)
+         raise
+
+Indices and Tables
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+
+
+\* :ref:`modindex`*

@@ -1,0 +1,421 @@
+
+Video Understanding AI System
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Overview
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Welcome to the Video Understanding AI system documentation. This system provides advanced video analysis capabilities through AI models.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Key Features
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+- Scene detection and analysis
+
+
+
+
+- Natural language querying of video content
+- Multi-modal AI model integration
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Getting Started
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Installation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. code-block:: bash
+
+      git clone https://github.com/your-org/video-understanding-poc
+      cd video-understanding-poc
+      pip install -r requirements.txt
+
+Basic Usage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.. code-block:: python
+
+      from video_understanding import VideoProcessor
+
+      Initialize processor
+
+
+
+
+
+
+
+
+=
+
+
+
+
+
+=
+
+
+      Process video
+
+
+
+
+
+
+
+
+=
+
+
+
+
+
+=
+
+
+Documentation Contents
+
+
+----------------------
+
+
+
+
+----------------------
+
+
+
+
+----------------------
+
+
+
+
+----------------------
+
+
+
+
+----------------------
+
+
+
+
+----------------------
+
+
+
+
+
+
+
+
+
+.. toctree::
+
+
+
+
+   :caption: User Guide
+
+   guides/getting_started
+   guides/video-upload
+   guides/error-handling
+   guides/vector-storage
+   guides/installation
+   setup
+   issues-and-resolutions
+   README
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: API Reference
+
+   api/index
+   api/core/index
+   api/models/index
+   api/storage/index
+   api/core/scene
+   api/core/upload
+   api/ai/models/base
+   api/ai/models/openai/model
+   api/ai/models/twelve_labs/model
+   api/ai/models/twelve_labs/types
+   api/storage/vector
+   api/ai/pipeline/index
+   api_reference/index
+   api
+   docs/api/cache
+   source/api/twelve_labs
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: Development
+
+   development/index
+   development/contributing
+   development/testing
+   development/deployment
+   development/testing/test_best_practices
+   development/testing/test_completion_guide
+   development/testing/test_suite
+   testing
+   testing-guide
+   ci-cd
+   project_board_automation
+   test_fixes
+   setup
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: Project Updates
+
+   project_updates/index
+   getting_started/index
+   guides/index
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Quick Links
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\* :doc:`setup`*

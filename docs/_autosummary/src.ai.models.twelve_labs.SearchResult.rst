@@ -1,0 +1,58 @@
+
+﻿src.ai.models.twelve_labs.SearchResult
+
+========================================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.ai.models.twelve_labs
+
+.. autoclass:: SearchResult
+
+   :members:
+   :show-inheritance:
+   :special-memberinherited-members:
+
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+
+      ~SearchResult.__init__
+      ~SearchResult.clear
+      ~SearchResult.copy
+      ~SearchResult.fromkeys
+      ~SearchResult.get
+      ~SearchResult.items
+      ~SearchResult.keys
+      ~SearchResult.pop
+      ~SearchResult.popitem
+      ~SearchResult.setdefault
+      ~SearchResult.update
+      ~SearchResult.values
+
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+      ~SearchResult.video_id
+      ~SearchResult.confidence
+      ~SearchResult.start_time
+      ~SearchResult.end_time
+      ~SearchResult.metadata
+
+Indices and Tables
+
+
+
+
+
+\* :doc:`/modindex`*

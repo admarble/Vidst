@@ -77,7 +77,6 @@ video_cache/
 *.onnx
 *.pt
 *.pth
-models/
 checkpoints/
 pretrained/
 
@@ -119,4 +118,8 @@ profiling/
 !.env.example
 credentials.json
 *_key.json
-*_credentials.json 
+*_credentials.json
+
+# Cache directories
+cache/
+.cache/

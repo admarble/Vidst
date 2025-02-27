@@ -1,0 +1,36 @@
+"""Common test configuration and fixtures."""
+
+import os
+import sys
+from unittest.mock import Mock
+
+import pytest
+
+# Add src to Python path
+src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../../src"))
+sys.path.insert(0, src_path)
+
+@pytest.fixture
+def api_key() -> str:
+    """Get API key from environment or return test key."""
+    return os.getenv("TWELVE_LABS_API_KEY", "test_api_key")
+
+@pytest.fixture
+def test_video_path() -> str:
+    """Get path to test video file."""
+    return os.path.join(os.path.dirname(__file__), "fixtures", "test_video.mp4")
+
+@pytest.fixture
+def mock_session() -> Mock:
+    """Create a mock aiohttp ClientSession."""
+    return Mock()
+
+@pytest.fixture
+def mock_client() -> Mock:
+    """Create a mock TwelveLabsClient."""
+    return Mock()
+
+@pytest.fixture
+def mock_model() -> Mock:
+    """Create a mock TwelveLabsModel."""
+    return Mock()

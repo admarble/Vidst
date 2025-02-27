@@ -1,0 +1,454 @@
+/* Theme Colors */
+:root {
+    --primary-color: #2980B9;
+    --text-color: #333;
+    --background-color: #fff;
+    --focus-outline-color: #2980B9;
+    --link-color: #2980B9;
+    --link-hover-color: #1a5276;
+}
+
+/* Base Styles with Improved Accessibility */
+body {
+    color: var(--text-color);
+    background: var(--background-color);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Navigation Styles */
+.wy-nav-side,
+.wy-side-nav-search,
+.wy-nav-top {
+    background: var(--primary-color);
+}
+
+/* High Contrast Focus States */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[tabindex]:focus {
+    outline: 3px solid var(--focus-outline-color);
+    outline-offset: 2px;
+    text-decoration: underline;
+}
+
+/* Skip Link */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    z-index: 1000;
+    transition: top 0.3s;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.skip-to-content:focus {
+    top: 0;
+    outline: 3px solid var(--focus-outline-color);
+}
+
+/* Cross-browser Selection */
+.user-select-none {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Form Elements with Better Accessibility */
+.form-input,
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="tel"],
+input[type="number"] {
+    padding: 0.5em;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    width: 100%;
+    max-width: 100%;
+}
+
+.form-input:focus,
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus {
+    border-color: var(--focus-outline-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(41, 128, 185, 0.2);
+}
+
+/* Heading Styles */
+[role="heading"][aria-level] {
+    position: relative;
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    font-weight: 600;
+    color: var(--text-color);
+    scroll-margin-top: 2em;
+}
+
+[role="heading"][data-fixed-level="true"]::before {
+    content: "⚠️";
+    position: absolute;
+    left: -1.5em;
+    color: #e74c3c;
+    font-size: 0.8em;
+}
+
+.caption[role="heading"][aria-level="2"] {
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    color: var(--text-color);
+}
+
+/* Filter Effects */
+.filter-grayscale {
+    filter: grayscale(100%);
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+}
+
+/* Table Improvements */
+.wy-table-responsive {
+    margin-bottom: 24px;
+    max-width: 100%;
+    overflow: auto;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wy-table-responsive table {
+    margin-bottom: 0;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e1e4e5;
+}
+
+.wy-table-responsive th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.wy-table-responsive td {
+    padding: 12px;
+    border-bottom: 1px solid #e1e4e5;
+    vertical-align: top;
+}
+
+.wy-table-responsive tr:last-child td {
+    border-bottom: none;
+}
+
+.wy-table-responsive tr:hover td {
+    background-color: rgba(41, 128, 185, 0.05);
+}
+
+/* Print Optimizations */
+@media print {
+
+    .wy-nav-side,
+    .rst-versions,
+    .wy-nav-top {
+        display: none !important;
+    }
+
+    .wy-nav-content-wrap {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    body {
+        font-size: 12pt;
+        background: white !important;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    .copy-button {
+        display: none !important;
+    }
+
+    [role="heading"][data-fixed-level="true"]::before {
+        content: none;
+    }
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+
+    .wy-nav-side {
+        left: -300px;
+        width: 300px;
+        transition: left 0.3s ease-in-out;
+    }
+
+    .wy-nav-side.shift {
+        left: 0;
+    }
+
+    body {
+        font-size: 14px;
+    }
+}
+
+/* Code Block Improvements */
+.rst-content pre.literal-block,
+.rst-content div[class^='highlight'] {
+    background: #f8f9fa;
+    border: 1px solid #e1e4e5;
+    padding: 12px;
+    margin: 1em 0;
+    border-radius: 4px;
+    overflow-x: auto;
+    position: relative;
+}
+
+/* Copy Button Styles */
+.copy-button {
+    position: absolute;
+    right: 0.5em;
+    top: 0.5em;
+    padding: 0.5em 1em;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+    z-index: 1;
+}
+
+.copy-button:hover {
+    background: var(--link-hover-color);
+}
+
+.copy-button:focus {
+    outline: 3px solid var(--focus-outline-color);
+    outline-offset: 2px;
+}
+
+/* Utility Classes */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.full-width {
+    width: 100% !important;
+}
+
+/* Index Table Styles */
+.indextable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.indextable tr {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.indextable td {
+    flex: 1 1 33.333%;
+    min-width: 250px;
+    padding: 0.5em;
+    vertical-align: top;
+}
+
+/* Fix for missing form labels */
+input[type="text"]:not([title]):not([placeholder]),
+input[type="search"]:not([title]):not([placeholder]),
+input[type="email"]:not([title]):not([placeholder]),
+input[type="tel"]:not([title]):not([placeholder]),
+input[type="number"]:not([title]):not([placeholder]) {
+    border-color: #e74c3c;
+}
+
+input[type="text"]:not([title]):not([placeholder])::before,
+input[type="search"]:not([title]):not([placeholder])::before,
+input[type="email"]:not([title]):not([placeholder])::before,
+input[type="tel"]:not([title]):not([placeholder])::before,
+input[type="number"]:not([title]):not([placeholder])::before {
+    content: "Please add a label or placeholder";
+    color: #e74c3c;
+    font-size: 0.8em;
+    display: block;
+}
+
+/* Remove legacy IE hacks with proper modern alternatives */
+.ir {
+    text-align: left;
+    direction: ltr;
+    line-height: 0;
+}
+
+button {
+    margin: 0;
+    vertical-align: baseline;
+    cursor: pointer;
+    line-height: normal;
+    -webkit-appearance: button;
+}
+
+.btn {
+    outline: none;
+    vertical-align: middle;
+    display: inline-block;
+    zoom: 1;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+}
+
+.wy-btn-group,
+.wy-breadcrumbs,
+.wy-menu-horiz,
+.wy-nav-top,
+.rst-footer-buttons,
+.rst-breadcrumbs-buttons,
+.rst-versions .rst-current-version {
+    zoom: 1;
+}
+
+.wy-form-aligned textarea {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+blockquote {
+    margin-bottom: 24px;
+    font-size: 150%;
+    margin-left: -7px;
+}
+
+input[type=checkbox] {
+    padding: 0;
+    margin-right: .3125em;
+    height: 13px;
+    width: 13px;
+}
+
+.wy-form-message-inline {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Theme backgrounds - remove inline styles */
+.wy-side-nav-search,
+.wy-nav-top,
+nav[data-toggle="wy-nav-shift"],
+.wy-nav-side,
+[style*="background: #2980B9"] {
+    background-color: var(--primary-color) !important;
+}
+
+/* Remove all inline styles */
+[style*="width: 100%"] {
+    width: 100% !important;
+}
+
+[style*="display: none"] {
+    display: none !important;
+}
+
+/* Improved contrast and readability */
+.wy-nav-content {
+    color: var(--text-color);
+    background: var(--background-color);
+    max-width: 1000px;
+}
+
+/* Improved heading styles */
+.rst-content .section h1,
+.rst-content .section h2,
+.rst-content .section h3,
+.rst-content .section h4,
+.rst-content .section h5,
+.rst-content .section h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+}
+
+/* Caption headings */
+.caption[role="heading"][aria-level] {
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+/* Navigation improvements */
+.wy-menu-vertical li.current>a,
+.wy-menu-vertical li.on a {
+    padding: 0.8em 1em;
+}
+
+.wy-menu-vertical a {
+    padding: 0.8em 1em;
+}
+
+/* Fix for duplicate viewport meta tags */
+@viewport {
+    width: device-width;
+    zoom: 1;
+}
+
+/* Improved Form Validation */
+input:not([aria-label]),
+select:not([aria-label]),
+textarea:not([aria-label]) {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
+
+input:not([aria-label])::before,
+select:not([aria-label])::before,
+textarea:not([aria-label])::before {
+    content: "Missing label";
+    color: #e74c3c;
+    font-size: 0.8em;
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+/* Improved Focus Management */
+:focus-visible {
+    outline: 3px solid var(--focus-outline-color);
+    outline-offset: 2px;
+    text-decoration: underline;
+}
