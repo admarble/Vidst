@@ -1,5 +1,5 @@
 [MASTER]
-ignore=docs
+ignore=docs,src/video_understanding,video_understanding
 ignore-patterns=
 
 [MESSAGES CONTROL]

@@ -1,5 +1,9 @@
 name: CI
 
+# Note: Old code in src/video_understanding and video_understanding directories
+# is excluded from linting and coverage checks as it's out of scope for the POC
+# and scheduled for removal after the refactoring is complete.
+
 # Required repository secrets:
 # - OPENAI_API_KEY: OpenAI API key for GPT-4V
 # - GEMINI_API_KEY: Google Gemini Pro Vision API key
@@ -25,24 +29,24 @@ jobs:
     - uses: actions/checkout@v4
       with:
         lfs: true
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-    
+
     - name: Install FFmpeg
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
-    
+
     - name: Set up test environment
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -53,29 +57,29 @@ jobs:
         sed -i "s/OPENAI_API_KEY=.*/OPENAI_API_KEY=$OPENAI_API_KEY/" .env.test
         sed -i "s/GEMINI_API_KEY=.*/GEMINI_API_KEY=$GEMINI_API_KEY/" .env.test
         sed -i "s/TWELVE_LABS_API_KEY=.*/TWELVE_LABS_API_KEY=$TWELVE_LABS_API_KEY/" .env.test
-    
+
     - name: Run unit tests
       run: |
         pytest tests/unit/ -v --cov=src --cov-report=xml
-    
+
     - name: Run integration tests
       run: |
         pytest tests/integration/ -v --cov=src --cov-append
-    
+
     - name: Run performance tests (subset)
       run: |
         pytest tests/performance/ -v -m "not slow" --cov=src --cov-append
-    
+
     - name: Upload coverage report
       uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         fail_ci_if_error: true
-    
+
     - name: Check test coverage
       run: |
         coverage report --fail-under=85
-    
+
     - name: Archive test results
       uses: actions/upload-artifact@v4
       with:
@@ -90,26 +94,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install black flake8 ruff mypy
-    
+
     - name: Run black
       run: black --check src tests
-    
+
     - name: Run flake8
       run: flake8 src tests
-    
+
     - name: Run ruff
       run: ruff check src tests
-    
+
     - name: Run mypy
       run: mypy src
 
@@ -117,22 +121,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install bandit safety
-    
+
     - name: Run security checks
       run: |
         bandit -r src
         safety check
-    
+
     - name: Run dependency review
       uses: actions/dependency-review-action@v3
 
@@ -141,23 +145,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install build twine
-    
+
     - name: Build package
       run: python -m build
-    
+
     - name: Check package
       run: twine check dist/*
-    
+
     - name: Archive build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -169,7 +173,7 @@ jobs:
     needs: [test, lint, security, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -192,4 +196,4 @@ jobs:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         TWINE_REPOSITORY: pypi
-      run: twine upload dist/* 
+      run: twine upload dist/*
