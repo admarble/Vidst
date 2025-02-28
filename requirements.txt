@@ -37,7 +37,7 @@ pinecone-client>=2.2.1  # For vector database storage
 faiss-cpu>=1.7.4  # For vector storage and similarity search (hybrid approach)
 
 # API integrations
-# twelvelabs-client>=1.0.0  # Client for Twelve Labs Scene Detection and NL Querying
+# twelvelabs-client>=1.0.0  # Client for Twelve Labs Scene Detection and NL Querying - Commented out as not available on PyPI
 google-generativeai>=0.4.0  # Google Generative AI
 
 # Storage and caching
