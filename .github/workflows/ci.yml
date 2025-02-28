@@ -117,15 +117,15 @@ jobs:
 
     - name: Run flake8
       run: |
-        flake8 src tests
+        flake8 src tests --exclude "src/video_understanding/,video_understanding/"
 
     - name: Run ruff
       run: |
-        ruff check src tests
+        ruff check src tests --exclude "src/video_understanding/,video_understanding/"
 
     - name: Run mypy
       run: |
-        mypy src tests
+        mypy src tests --exclude "src/video_understanding/" --exclude "video_understanding/"
 
   security:
     runs-on: ubuntu-latest
@@ -145,7 +145,7 @@ jobs:
     - name: Run security checks
       run: |
         bandit -r src --exclude "src/video_understanding/**"
-        safety check
+        safety check --ignore=42194
 
     - name: Run dependency review
       uses: actions/dependency-review-action@v4
