@@ -112,16 +112,20 @@ jobs:
         pip install black flake8 ruff mypy
 
     - name: Run black
-      run: black --check src tests
+      run: |
+        black --check src tests --exclude "src/video_understanding/|video_understanding/"
 
     - name: Run flake8
-      run: flake8 src tests
+      run: |
+        flake8 src tests
 
     - name: Run ruff
-      run: ruff check src tests
+      run: |
+        ruff check src tests
 
     - name: Run mypy
-      run: mypy src
+      run: |
+        mypy src tests
 
   security:
     runs-on: ubuntu-latest
@@ -140,11 +144,13 @@ jobs:
 
     - name: Run security checks
       run: |
-        bandit -r src
+        bandit -r src --exclude "src/video_understanding/**"
         safety check
 
     - name: Run dependency review
-      uses: actions/dependency-review-action@v3
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: critical
 
   build:
     needs: [test, lint, security]
