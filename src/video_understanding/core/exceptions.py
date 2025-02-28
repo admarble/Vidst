@@ -3,12 +3,42 @@
 This module defines all the custom exceptions used throughout the project.
 Each exception class is properly documented and referenced.
 
+Example:
+    Basic exception handling:
+
+    >>> try:
+    ...     process_video(file_path)
+    ... except VideoUnderstandingError as e:
+    ...     logger.error(f"Processing failed: {e}")
+    ...     if e.__cause__:
+    ...         logger.debug(f"Caused by: {e.__cause__}")
+
+    Converting standard exceptions:
+
+    >>> try:
+    ...     result = api_call()
+    ... except Exception as e:
+    ...     raise handle_error(e)
+
 :no-index:
 """
 
 
 class VideoUnderstandingError(Exception):
     """Base exception class for all Video Understanding AI errors.
+
+    This is the root exception class for all custom exceptions in the project.
+    It provides support for error cause tracking and consistent error handling.
+
+    Example:
+        >>> try:
+        ...     raise ValueError("Invalid input")
+        ... except ValueError as e:
+        ...     raise VideoUnderstandingError("Processing failed", cause=e)
+
+    Args:
+        message: The error message
+        cause: The original exception that caused this error
 
     :no-index:
     """
@@ -72,10 +102,33 @@ class APIError(VideoUnderstandingError):
 class ModelError(VideoUnderstandingError):
     """Raised when model operations fail.
 
+    This exception serves as the base class for all model-related errors.
+    It properly handles error causes and provides a consistent interface
+    for error handling across different model implementations.
+
+    Example:
+        >>> try:
+        ...     model.predict(input_data)
+        ... except ValueError as e:
+        ...     raise ModelError("Prediction failed", cause=e)
+
+    Args:
+        message: The error message
+        cause: The original exception that caused this error
+
     :no-index:
     """
 
-    pass
+    def __init__(self, message: str, cause: BaseException | None = None):
+        """Initialize with optional cause.
+
+        Args:
+            message: The error message
+            cause: The original exception that caused this error
+        """
+        super().__init__(message, cause)
+        if cause:
+            self.__cause__ = cause
 
 
 class ResourceError(VideoUnderstandingError):
@@ -135,10 +188,29 @@ class VideoFormatError(ProcessingError):
 class VideoProcessingError(ProcessingError):
     """Raised when video processing fails.
 
+    Args:
+        message: The error message
+        cause: The original exception that caused this error
+        video_path: The path to the video file being processed
+
     :no-index:
     """
 
-    pass
+    def __init__(
+        self,
+        message: str,
+        cause: BaseException | None = None,
+        video_path: str | None = None,
+    ):
+        """Initialize with optional cause and video path.
+
+        Args:
+            message: The error message
+            cause: The original exception that caused this error
+            video_path: The path to the video file being processed
+        """
+        super().__init__(message, cause)
+        self.video_path = video_path
 
 
 class AudioProcessingError(ProcessingError):
@@ -312,11 +384,31 @@ class TaskError(TwelveLabsError):
 
 class ResourceExceededError(VideoProcessingError):
     """Exception raised when resource limits are exceeded."""
+
     pass
 
 
 class ConcurrencyLimitError(VideoProcessingError):
     """Exception raised when concurrent processing limit is exceeded."""
+
+    pass
+
+
+class SecurityError(VideoUnderstandingError):
+    """Exception raised for security-related errors."""
+
+    pass
+
+
+class IntegrityError(VideoUnderstandingError):
+    """Exception raised for file integrity errors."""
+
+    pass
+
+
+class UploadError(VideoUnderstandingError):
+    """Exception raised for upload-related errors."""
+
     pass
 
 
@@ -349,11 +441,27 @@ ERROR_MAP: dict[type[BaseException], type[VideoUnderstandingError]] = {
 def handle_error(error: BaseException) -> VideoUnderstandingError:
     """Convert standard Python exceptions to custom exceptions.
 
+    This function maps standard Python exceptions to our custom exception hierarchy.
+    It preserves the error cause chain and provides consistent error handling.
+
+    Example:
+        >>> try:
+        ...     process_data()
+        ... except Exception as e:
+        ...     raise handle_error(e)
+
     Args:
         error: The original exception to convert
 
     Returns:
         A custom VideoUnderstandingError instance
+
+    Example mappings:
+        - ValueError -> ValidationError
+        - FileNotFoundError -> ResourceNotFoundError
+        - PermissionError -> AuthenticationError
+        - TimeoutError -> CustomTimeoutError
+        - MemoryError -> CustomMemoryError
     """
     if isinstance(error, VideoUnderstandingError):
         return error

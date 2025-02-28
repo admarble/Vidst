@@ -1,0 +1,79 @@
+site_name: Vidst
+site_description: AI-powered video understanding and analysis system - POC
+site_author: admarble
+site_url: https://admarble.github.io/Vidst
+repo_name: admarble/Vidst
+repo_url: https://github.com/admarble/Vidst
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2025 Your Organization
+
+# Configuration for Material theme
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+# Markdown extensions (simplified for POC)
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - tables
+
+# Navigation structure
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting_started/installation.md
+    - Quick Start: getting_started/quickstart.md
+  - Components:
+    - Status Dashboard: components/status_dashboard.md
+    - Scene Detection: components/scene_detection.md
+    - Vector Storage: components/vector_storage.md
+    - OCR: components/ocr.md
+    - Natural Language Querying: components/nl_querying.md
+    - Audio Transcription: components/audio_transcription.md
+  - Architecture: 
+    - System Overview: architecture/system_overview.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Testing: development/testing.md
+
+# Essential plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true

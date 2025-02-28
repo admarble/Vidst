@@ -127,7 +127,27 @@ class MetricsTracker:
         """Initialize metrics tracker."""
         self.measurements: dict[str, list[MetricMeasurement]] = {}
         self.success_criteria = SuccessCriteria()
+        self.active_processes = 0
         logger.info("Initialized metrics tracker")
+
+    def get_active_count(self) -> int:
+        """Get the current number of active processing operations.
+
+        Returns:
+            int: Number of active processes
+        """
+        return self.active_processes
+
+    def increment_active_count(self) -> None:
+        """Increment the count of active processing operations."""
+        self.active_processes += 1
+        logger.debug("Incremented active process count to %d", self.active_processes)
+
+    def decrement_active_count(self) -> None:
+        """Decrement the count of active processing operations."""
+        if self.active_processes > 0:
+            self.active_processes -= 1
+        logger.debug("Decremented active process count to %d", self.active_processes)
 
     def record_metric(
         self, metric_name: str, value: float, context: dict[str, Any] | None = None

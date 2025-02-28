@@ -10,6 +10,7 @@ This section contains detailed guides for using the Video Understanding AI syste
    quickstart
    video-upload
    video-processing
+   api-integration
    error-handling
    configuration
    caching

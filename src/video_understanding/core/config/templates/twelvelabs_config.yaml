@@ -1,0 +1,50 @@
+# Twelve Labs API Configuration
+
+# API credentials
+api:
+  # Your Twelve Labs API key - replace with your actual key or use environment variable
+  api_key: ${TWELVE_LABS_API_KEY}
+  # Base URL for Twelve Labs API
+  base_url: "https://api.twelvelabs.io/v1"
+
+# Index configuration
+indexes:
+  # Default index name for video embeddings
+  default_index: "vidst_default_index"
+  # Maximum number of videos in an index
+  max_videos_per_index: 100
+
+# Processing options
+processing:
+  # Enable scene detection using Twelve Labs
+  scene_detection: true
+  # Enable OCR through Twelve Labs API
+  ocr_enabled: true
+  # Enable audio transcription through Twelve Labs
+  audio_transcription: true
+  # Enable object detection
+  object_detection: true
+
+# Query options
+query:
+  # Maximum number of results to return
+  max_results: 20
+  # Minimum confidence score (0-1)
+  min_confidence: 0.7
+  # Time segment padding (seconds)
+  time_padding: 1.5
+  # Cross-reference results with local processing
+  cross_reference: true
+
+# Rate limiting and performance
+performance:
+  # Maximum concurrent requests
+  max_concurrent_requests: 5
+  # Request timeout in seconds
+  timeout: 30
+  # Enable retry on failure
+  retry_on_failure: true
+  # Maximum retries
+  max_retries: 3
+  # Base delay between retries (seconds)
+  retry_base_delay: 2

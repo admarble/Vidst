@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 from uuid import UUID, uuid4
 
 
@@ -17,6 +17,15 @@ class ProcessingStatus(str, Enum):
     PENDING = "pending"
     UPLOADING = "uploading"
     VALIDATING = "validating"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    QUARANTINED = "quarantined"
+
+
+class VideoProcessingStatus(Enum):
+    """Video processing status."""
+    PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
@@ -34,13 +43,25 @@ class VideoFile:
         file_size: Size of the file in bytes
         created_at: When the file was created in the system
         modified_at: When the file was last modified
+        duration: Duration in seconds
+        width: Frame width in pixels
+        height: Frame height in pixels
+        fps: Frames per second
+        bitrate: Video bitrate
+        checksum: File checksum
     """
     filename: str
-    file_path: str
+    file_path: Path
     format: str
     file_size: int
     created_at: datetime = datetime.now()
     modified_at: datetime = datetime.now()
+    duration: Optional[float] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    fps: Optional[float] = None
+    bitrate: Optional[int] = None
+    checksum: Optional[str] = None
 
     def __post_init__(self) -> None:
         """Validate the video file information."""
@@ -136,6 +157,61 @@ class VideoMetadata:
 
 
 @dataclass
+class VideoBasicInfo:
+    """Basic information about a video.
+
+    This class contains the essential information needed to identify and locate a video,
+    without the full processing details.
+
+    Attributes:
+        id: Unique identifier for the video
+        filename: Original name of the file
+        file_path: Current path to the file in the system
+        format: Video format (e.g., MP4, AVI)
+        file_size: Size of the file in bytes
+        created_at: When the file was created in the system
+        modified_at: When the file was last modified
+    """
+    id: UUID
+    filename: str
+    file_path: Path
+    format: str
+    file_size: int
+    created_at: datetime = datetime.now()
+    modified_at: datetime = datetime.now()
+
+    def __post_init__(self) -> None:
+        """Validate the video basic information."""
+        if not isinstance(self.id, UUID):
+            self.id = UUID(str(self.id))
+        if not self.filename:
+            raise ValueError("Filename cannot be empty")
+        if not self.file_path:
+            raise ValueError("File path cannot be empty")
+        if not self.format:
+            self.format = Path(self.filename).suffix[1:].upper()
+
+    @classmethod
+    def from_file(cls, file_path: Path, id: Optional[UUID] = None) -> "VideoBasicInfo":
+        """Create a VideoBasicInfo instance from a file path.
+
+        Args:
+            file_path: Path to video file
+            id: Optional unique identifier for the video
+
+        Returns:
+            VideoBasicInfo instance
+        """
+        return cls(
+            id=id or uuid4(),
+            filename=file_path.name,
+            file_path=file_path,
+            format=file_path.suffix[1:].upper(),
+            file_size=file_path.stat().st_size,
+        )
+
+
+@dataclass
 class Video:
     """Main video model containing all video information.
 
@@ -144,11 +220,19 @@ class Video:
         file_info: Information about the video file
         processing: Processing status and progress
         metadata: Technical metadata (available after processing)
+        status: Current processing status
+        upload_time: When the video was uploaded
+        processing_time: Time taken for processing
+        error_message: Error message if processing failed
     """
     id: UUID
     file_info: VideoFile
     processing: VideoProcessingInfo
     metadata: Optional[VideoMetadata] = None
+    status: VideoProcessingStatus = VideoProcessingStatus.PENDING
+    upload_time: datetime = datetime.now()
+    processing_time: Optional[float] = None
+    error_message: Optional[str] = None
 
     def __post_init__(self) -> None:
         """Validate the video ID and initialize if needed."""
@@ -174,7 +258,7 @@ class Video:
         return self.file_info.filename
 
     @property
-    def file_path(self) -> str:
+    def file_path(self) -> Path:
         """Get the current file path."""
         return self.file_info.file_path
 
@@ -207,7 +291,7 @@ class Video:
         """
         file_info = VideoFile(
             filename=path.name,
-            file_path=str(path),
+            file_path=path,
             format=path.suffix[1:].upper(),
             file_size=path.stat().st_size,
         )

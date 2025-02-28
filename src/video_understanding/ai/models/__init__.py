@@ -1,21 +1,31 @@
-"""AI model initialization and management."""
+"""AI model implementations."""
 
-from typing import Any
+import json
+from pathlib import Path
+from typing import Any, Dict, Optional, Type
 
 from .base import BaseModel
 from .config import get_model_config
 from .gemini import GeminiModel
-from .gpt4v import GPT4VisionModel
+from .gpt4v import GPT4VModel
 from .twelve_labs import TwelveLabsModel
 from .whisper import WhisperModel
 
-# Model registry
-MODEL_REGISTRY: dict[str, type[BaseModel]] = {
+# Model registry for dynamic loading
+MODEL_REGISTRY: Dict[str, Type[BaseModel]] = {
     "twelve_labs": TwelveLabsModel,
-    "gpt4v": GPT4VisionModel,
+    "gpt4v": GPT4VModel,
     "gemini": GeminiModel,
     "whisper": WhisperModel,
 }
+
+__all__ = [
+    "BaseModel",
+    "GPT4VModel",
+    "GeminiModel",
+    "WhisperModel",
+    "TwelveLabsModel"
+]
 
 
 def initialize_models() -> dict[str, BaseModel]:
@@ -55,27 +65,15 @@ def load_model(model_name: str, config: dict[str, Any] | None = None) -> BaseMod
     return model_cls(**config)
 
 
-def get_model_config(model_name: str) -> dict[str, Any]:
-    """Get configuration for a specific model.
-
-    This function loads the model's configuration from the config file.
-    If no model-specific configuration exists, returns default values.
+def get_model_config(model_name: str) -> Dict[str, Any]:
+    """Get configuration for a model.
 
     Args:
         model_name: Name of the model
 
     Returns:
-        Configuration dictionary for the model
-
-    Raises:
-        ValueError: If model_name is not found in registry
+        Model configuration dictionary
     """
-    if model_name not in MODEL_REGISTRY:
-        raise ValueError(f"Model {model_name} not found in registry")
-
-    config_path = Path(__file__).parent / "config" / f"{model_name}.json"
-
-    # Default configurations
     default_configs = {
         "twelve_labs": {"api_key": "", "max_retries": 3, "timeout": 300},
         "gpt4v": {"api_key": "", "model": "gpt-4-vision-preview", "max_tokens": 1000},
@@ -83,6 +81,7 @@ def get_model_config(model_name: str) -> dict[str, Any]:
         "whisper": {"api_key": "", "model": "whisper-v3", "language": "en"},
     }
 
+    config_path = Path("config/models.json")
     try:
         if config_path.exists():
             with open(config_path) as f:

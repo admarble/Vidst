@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Generator, List, Optional, Any, TypeVar, Union
+import tempfile
 
 from video_understanding.utils.exceptions import ProcessingError
 from video_understanding.models.video import Video, ProcessingStatus
@@ -21,35 +22,63 @@ T = TypeVar('T')  # Generic type for resources
 
 
 class UploadContext:
-    """Context manager for upload operations.
+    """Manages context for video upload processing."""
 
-    This class manages the lifecycle of temporary files and resources during
-    upload processing, ensuring proper cleanup in both success and failure cases.
-
-    Example:
-        >>> with UploadContext(video) as context:
-        ...     temp_file = context.create_temp_file("video.mp4")
-        ...     process_file(temp_file)
-        >>> # All temporary files are cleaned up
-    """
-
-    def __init__(
-        self,
-        video: Video,
-        progress_tracker: Optional[ProgressTracker] = None,
-    ) -> None:
-        """Initialize the upload context.
+    def __init__(self, video: Union[Video, Path], progress_tracker: Optional[ProgressTracker] = None):
+        """Initialize upload context.
 
         Args:
-            video: Video being processed
-            progress_tracker: Optional progress tracker
+            video: Video object or path to uploaded video file
+            progress_tracker: Optional progress tracking
         """
-        self.video = video
+        self.video = video if isinstance(video, Video) else None
+        self.file_path = video.file_info.file_path if isinstance(video, Video) else video
         self.progress_tracker = progress_tracker
+        self.start_time = datetime.now()
+        self.scenes: List[Dict[str, Any]] = []
+        self.text_content: List[Dict[str, Any]] = []
+        self.metadata: Dict[str, Any] = {
+            "filename": video.file_info.filename if isinstance(video, Video) else self.file_path.name,
+            "size_bytes": video.file_info.file_size if isinstance(video, Video) else self.file_path.stat().st_size,
+            "upload_time": self.start_time.isoformat()
+        }
         self.temp_files: List[Path] = []
         self.temp_dirs: List[Path] = []
-        self._start_time = datetime.now()
         self._resources: Dict[str, Any] = {}
+
+    def add_scenes(self, scenes: List[Dict[str, Any]]) -> None:
+        """Add detected scenes to context.
+
+        Args:
+            scenes: List of scene information dictionaries
+        """
+        self.scenes.extend(scenes)
+        self.metadata["scene_count"] = len(self.scenes)
+
+    def add_text(self, text_content: List[Dict[str, Any]]) -> None:
+        """Add extracted text to context.
+
+        Args:
+            text_content: List of text extraction results
+        """
+        self.text_content.extend(text_content)
+        self.metadata["text_blocks"] = len(self.text_content)
+
+    def get_results(self) -> Dict[str, Any]:
+        """Get processing results.
+
+        Returns:
+            Dictionary containing all processing results
+        """
+        end_time = datetime.now()
+        processing_time = (end_time - self.start_time).total_seconds()
+
+        return {
+            "metadata": self.metadata,
+            "scenes": self.scenes,
+            "text_content": self.text_content,
+            "processing_time": processing_time
+        }
 
     def __enter__(self) -> 'UploadContext':
         """Enter the context.
@@ -72,14 +101,13 @@ class UploadContext:
         except Exception as e:
             logger.error(f"Failed to cleanup upload context: {e}")
 
-        if exc_type is not None:
+        if exc_type is not None and self.progress_tracker and self.video:
             # Log error and update progress on exception
-            if self.progress_tracker:
-                self.progress_tracker.mark_stage_error(
-                    self.video.processing.status,
-                    str(exc_val),
-                    error_type=exc_type.__name__,
-                )
+            self.progress_tracker.mark_stage_error(
+                self.video.processing.status,
+                str(exc_val),
+                error_type=exc_type.__name__,
+            )
 
     def track_temp_file(self, file_path: Path) -> None:
         """Track a temporary file for cleanup.
@@ -123,64 +151,30 @@ class UploadContext:
         self.temp_files.clear()
         self.temp_dirs.clear()
 
-    def create_temp_file(self, name: str, content: bytes = b"") -> Path:
+    def create_temp_file(self, suffix: str = "") -> Path:
         """Create a temporary file.
 
         Args:
-            name: Name for the temporary file
-            content: Optional initial content
+            suffix: Optional file suffix
 
         Returns:
-            Path to the created temporary file
-
-        Raises:
-            ProcessingError: If file creation fails
+            Path to temporary file
         """
-        try:
-            # Create parent directories if needed
-            temp_dir = Path("/tmp/video_upload")
-            temp_dir.mkdir(parents=True, exist_ok=True)
+        temp_file = Path(tempfile.mktemp(suffix=suffix))
+        self.temp_files.append(temp_file)
+        self.track_temp_file(temp_file)
+        return temp_file
 
-            # Create unique filename
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            temp_path = temp_dir / f"{timestamp}_{name}"
-
-            # Write content
-            temp_path.write_bytes(content)
-            self.track_temp_file(temp_path)
-
-            return temp_path
-
-        except Exception as e:
-            raise ProcessingError(f"Failed to create temporary file: {e}")
-
-    def create_temp_dir(self, name: str) -> Path:
+    def create_temp_dir(self) -> Path:
         """Create a temporary directory.
 
-        Args:
-            name: Name for the temporary directory
-
         Returns:
-            Path to the created temporary directory
-
-        Raises:
-            ProcessingError: If directory creation fails
+            Path to temporary directory
         """
-        try:
-            # Create parent directories if needed
-            temp_base = Path("/tmp/video_upload")
-            temp_base.mkdir(parents=True, exist_ok=True)
-
-            # Create unique directory name
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            temp_dir = temp_base / f"{timestamp}_{name}"
-            temp_dir.mkdir(parents=True)
-
-            self.track_temp_dir(temp_dir)
-            return temp_dir
-
-        except Exception as e:
-            raise ProcessingError(f"Failed to create temporary directory: {e}")
+        temp_dir = Path(tempfile.mkdtemp())
+        self.temp_dirs.append(temp_dir)
+        self.track_temp_dir(temp_dir)
+        return temp_dir
 
     @contextmanager
     def temp_file(self, name: str, content: bytes = b"") -> Generator[Path, None, None]:
@@ -200,7 +194,7 @@ class UploadContext:
         """
         temp_path = None
         try:
-            temp_path = self.create_temp_file(name, content)
+            temp_path = self.create_temp_file(name)
             yield temp_path
         finally:
             if temp_path and temp_path.exists():
@@ -226,7 +220,7 @@ class UploadContext:
         """
         temp_dir = None
         try:
-            temp_dir = self.create_temp_dir(name)
+            temp_dir = self.create_temp_dir()
             yield temp_dir
         finally:
             if temp_dir and temp_dir.exists():
@@ -270,4 +264,4 @@ class UploadContext:
         Returns:
             Elapsed time in seconds
         """
-        return (datetime.now() - self._start_time).total_seconds()
+        return (datetime.now() - self.start_time).total_seconds()

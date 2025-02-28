@@ -67,3 +67,18 @@ from .exceptions import (
     ResourceExceededError,
     ConcurrencyLimitError,
 )
+
+"""Core functionality for video processing and analysis."""
+
+from .config import ProcessingConfig, VideoConfig
+from .exceptions import VideoUnderstandingError
+from .processing import VideoProcessor
+from .upload import VideoUploader
+
+__all__ = [
+    "ProcessingConfig",
+    "VideoConfig",
+    "VideoProcessor",
+    "VideoUnderstandingError",
+    "VideoUploader",
+]

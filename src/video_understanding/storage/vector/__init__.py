@@ -33,6 +33,8 @@ from .utils import (
     wrap_errors,
     retry_operation,
 )
+from .config import VectorStorageConfig
+from .storage import VectorStorage
 
 __all__ = [
     # Types
@@ -63,4 +65,8 @@ __all__ = [
     'normalize_vector',
     'wrap_errors',
     'retry_operation',
+
+    # Config and Storage
+    'VectorStorageConfig',
+    'VectorStorage',
 ]

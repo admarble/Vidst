@@ -7,7 +7,7 @@ the video upload processing pipeline.
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Optional
 
 from video_understanding.core.exceptions import ConfigurationError
 from video_understanding.models.video import ProcessingStatus
@@ -227,3 +227,41 @@ class RetryConfig:
         """
         delay = self.retry_delay * (self.backoff_factor**attempt)
         return min(delay, self.max_delay)
+
+
+@dataclass
+class UploadConfig:
+    """Configuration for video upload processing."""
+
+    # File validation
+    max_file_size_mb: int = 2048  # 2GB
+    allowed_extensions: List[str] = field(default_factory=lambda: [".mp4", ".avi", ".mov"])
+
+    # Processing
+    detection_enabled: bool = True
+    ocr_enabled: bool = True
+    scene_detection_enabled: bool = True
+
+    # OCR settings
+    ocr_languages: List[str] = field(default_factory=lambda: ["eng"])
+    ocr_confidence_threshold: float = 0.7
+
+    # Scene detection
+    min_scene_duration: float = 2.0  # seconds
+    max_scenes: int = 500
+    scene_threshold: float = 30.0  # threshold for scene change detection
+
+    # Security
+    virus_scan_enabled: bool = True
+    content_validation_enabled: bool = True
+
+    # Processing paths
+    temp_dir: Optional[Path] = None
+    output_dir: Optional[Path] = None
+
+    def __post_init__(self):
+        """Convert string paths to Path objects if needed."""
+        if isinstance(self.temp_dir, str):
+            self.temp_dir = Path(self.temp_dir)
+        if isinstance(self.output_dir, str):
+            self.output_dir = Path(self.output_dir)

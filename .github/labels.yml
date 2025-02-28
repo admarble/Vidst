@@ -1,0 +1,97 @@
+# GitHub Issue Labels Configuration
+
+# Component Labels (blue)
+- name: "component:twelve-labs"
+  color: "0366d6"
+  description: "Issues related to the Twelve Labs integration"
+
+- name: "component:vector-storage"
+  color: "0366d6"
+  description: "Issues related to vector storage (Pinecone)"
+
+- name: "component:ocr"
+  color: "0366d6"
+  description: "Issues related to OCR (Google Document AI)"
+
+- name: "component:transcription"
+  color: "0366d6"
+  description: "Issues related to audio transcription"
+
+- name: "component:documentation"
+  color: "0366d6"
+  description: "Issues related to documentation"
+
+- name: "component:testing"
+  color: "0366d6"
+  description: "Issues related to testing"
+
+- name: "component:infrastructure"
+  color: "0366d6"
+  description: "Issues related to infrastructure"
+
+# Process Labels (green)
+- name: "status:blocked"
+  color: "22863a"
+  description: "Issues blocked by dependencies"
+
+- name: "status:ready"
+  color: "22863a"
+  description: "Issues ready for implementation"
+
+- name: "status:in-progress"
+  color: "22863a"
+  description: "Issues currently being worked on"
+
+- name: "status:review-needed"
+  color: "22863a"
+  description: "Issues awaiting review"
+
+- name: "priority:high"
+  color: "22863a"
+  description: "High priority tasks"
+
+- name: "priority:medium"
+  color: "22863a"
+  description: "Medium priority tasks"
+
+- name: "priority:low"
+  color: "22863a"
+  description: "Low priority tasks"
+
+# Type Labels (purple)
+- name: "type:refactor"
+  color: "6f42c1"
+  description: "Refactoring tasks"
+
+- name: "type:bug"
+  color: "6f42c1"
+  description: "Bug fixes"
+
+- name: "type:feature"
+  color: "6f42c1"
+  description: "New features"
+
+- name: "type:docs"
+  color: "6f42c1"
+  description: "Documentation updates"
+
+- name: "type:test"
+  color: "6f42c1"
+  description: "Testing related tasks"
+
+- name: "type:maintenance"
+  color: "6f42c1"
+  description: "Maintenance tasks"
+
+# Scope Labels (red)
+- name: "scope:creep"
+  color: "d73a4a"
+  description: "Features that exceed minimum viable definitions"
+
+- name: "scope:deferred"
+  color: "d73a4a"
+  description: "Features deferred to post-POC phase"
+
+- name: "scope:adjusted"
+  color: "d73a4a"
+  description: "Features with adjusted scope"

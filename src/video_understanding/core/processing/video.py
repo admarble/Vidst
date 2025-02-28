@@ -13,8 +13,15 @@ from typing import Any
 import cv2
 import numpy as np
 from PIL import Image
+import os
+import psutil
 
-from ..exceptions import ValidationError, VideoProcessingError
+from ..exceptions import (
+    ValidationError,
+    VideoProcessingError,
+    ResourceExceededError,
+    ConcurrencyLimitError,
+)
 from ..metrics import MetricsTracker, PerformanceTimer
 
 
@@ -28,6 +35,8 @@ class VideoProcessor:
         metrics_tracker: Instance of MetricsTracker for monitoring performance
         supported_formats: List of supported video formats
         max_file_size: Maximum supported file size in bytes
+        memory_limit: Maximum allowed memory usage in bytes
+        concurrent_limit: Maximum allowed number of concurrent processing jobs
     """
 
     def __init__(self, metrics_tracker: MetricsTracker | None = None):
@@ -39,6 +48,35 @@ class VideoProcessor:
         self.metrics_tracker = metrics_tracker or MetricsTracker()
         self.supported_formats = [".mp4", ".avi", ".mov"]
         self.max_file_size = 2 * 1024 * 1024 * 1024  # 2GB
+        self.memory_limit = 4 * 1024 * 1024 * 1024  # 4GB
+        self.concurrent_limit = 3  # Maximum number of concurrent processing jobs
+
+    def check_resources(self) -> bool:
+        """Check if system has enough resources for video processing.
+
+        Returns:
+            bool: True if sufficient resources available
+
+        Raises:
+            ResourceExceededError: If resources are not sufficient
+            ConcurrencyLimitError: If concurrent processing limit is exceeded
+        """
+        # Check available memory
+        mem = psutil.virtual_memory()
+        if mem.available < self.memory_limit:
+            raise ResourceExceededError(
+                f"Insufficient memory: {mem.available} bytes available, {self.memory_limit} required"
+            )
+
+        # Check concurrent processing limit
+        if self.metrics_tracker:
+            active_count = self.metrics_tracker.get_active_count()
+            if active_count >= self.concurrent_limit:
+                raise ConcurrencyLimitError(
+                    f"Concurrent processing limit exceeded: {active_count} active, {self.concurrent_limit} allowed"
+                )
+
+        return True
 
     def validate_video(self, video_path: str) -> bool:
         """Validate video file format and size.
@@ -83,6 +121,12 @@ class VideoProcessor:
             VideoProcessingError: If processing fails
         """
         try:
+            # Check if we have enough resources
+            self.check_resources()
+
+            # Increment active count
+            self.metrics_tracker.increment_active_count()
+
             with PerformanceTimer(self.metrics_tracker, "video_processing_time"):
                 # Validate input
                 self.validate_video(video_path)
@@ -104,8 +148,12 @@ class VideoProcessor:
 
         except Exception as e:
             raise VideoProcessingError(
-                f"Failed to process video: {e!s}", video_path=video_path
+                f"Failed to process video: {e!s}", cause=e, video_path=video_path
             ) from e
+        finally:
+            # Decrement active count
+            if hasattr(self, "metrics_tracker") and self.metrics_tracker:
+                self.metrics_tracker.decrement_active_count()
 
     def extract_frames(
         self, video_path: str, options: dict[str, Any] | None = None

@@ -8,7 +8,7 @@ implementations.
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Dict, Optional
 
 from ..exceptions import ModelError
 
@@ -26,8 +26,16 @@ class BaseModel(ABC):
     - Error handling
     """
 
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        """Initialize base model.
+
+        Args:
+            config: Optional configuration dictionary
+        """
+        self.config = config or {}
+
     @abstractmethod
-    def validate(self, input_data: dict[str, Any]) -> bool:
+    def validate(self, input_data: Dict[str, Any]) -> bool:
         """Validate input data before processing.
 
         Args:
@@ -42,7 +50,7 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
-    async def process(self, input_data: dict[str, Any]) -> dict[str, Any]:
+    async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process input data through the model.
 
         This method must be implemented as a coroutine to support

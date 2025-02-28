@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import UUID
 
 # Third-party imports
@@ -172,9 +172,7 @@ except ImportError:
         """Mock implementation of ProcessingConfig."""
 
         def __init__(
-            self,
-            max_concurrent_uploads: int = 3,
-            test_mode: bool = False
+            self, max_concurrent_uploads: int = 3, test_mode: bool = False
         ) -> None:
             self._max_video_size: int = 100 * 1024 * 1024  # 100MB
             self._max_concurrent_uploads: int = max_concurrent_uploads
@@ -308,13 +306,87 @@ except ImportError:
         type[VideoProcessingStatusType], MockVideoProcessingStatus
     )
 
-# Mock cv2 module
+# Mock cv2 module before any imports
 mock_cv2 = MagicMock()
-mock_cv2.VideoCapture = MagicMock()
-mock_cv2.CAP_PROP_FPS = 5
-mock_cv2.CAP_PROP_FRAME_COUNT = 7
+
+# Video capture and writer
+mock_video_capture = MagicMock()
+mock_video_capture.isOpened.return_value = True
+mock_video_capture.read.return_value = (True, MagicMock())
+mock_video_capture.get.side_effect = [
+    30.0,
+    300,
+    1920,
+    1080,
+]  # fps, frames, width, height
+mock_cv2.VideoCapture = MagicMock(return_value=mock_video_capture)
+mock_cv2.VideoWriter = MagicMock()
+
+# Image operations
+mock_cv2.imread = MagicMock()
+mock_cv2.imwrite = MagicMock()
+mock_cv2.resize = MagicMock()
+mock_cv2.cvtColor = MagicMock()
+
+# Video capture properties
+mock_cv2.CAP_PROP_POS_MSEC = 0
+mock_cv2.CAP_PROP_POS_FRAMES = 1
+mock_cv2.CAP_PROP_POS_AVI_RATIO = 2
 mock_cv2.CAP_PROP_FRAME_WIDTH = 3
 mock_cv2.CAP_PROP_FRAME_HEIGHT = 4
+mock_cv2.CAP_PROP_FPS = 5
+mock_cv2.CAP_PROP_FOURCC = 6
+mock_cv2.CAP_PROP_FRAME_COUNT = 7
+mock_cv2.CAP_PROP_FORMAT = 8
+mock_cv2.CAP_PROP_MODE = 9
+mock_cv2.CAP_PROP_BRIGHTNESS = 10
+mock_cv2.CAP_PROP_CONTRAST = 11
+mock_cv2.CAP_PROP_SATURATION = 12
+mock_cv2.CAP_PROP_HUE = 13
+mock_cv2.CAP_PROP_GAIN = 14
+mock_cv2.CAP_PROP_EXPOSURE = 15
+
+# Color conversion codes
+mock_cv2.COLOR_BGR2GRAY = 100
+mock_cv2.COLOR_RGB2GRAY = 101
+mock_cv2.COLOR_GRAY2BGR = 102
+mock_cv2.COLOR_GRAY2RGB = 103
+mock_cv2.COLOR_BGR2RGB = 104
+mock_cv2.COLOR_RGB2BGR = 105
+
+# Window properties
+mock_cv2.WINDOW_NORMAL = 200
+mock_cv2.WINDOW_AUTOSIZE = 201
+mock_cv2.WINDOW_OPENGL = 202
+
+# Mouse events
+mock_cv2.EVENT_MOUSEMOVE = 300
+mock_cv2.EVENT_LBUTTONDOWN = 301
+mock_cv2.EVENT_RBUTTONDOWN = 302
+mock_cv2.EVENT_MBUTTONDOWN = 303
+mock_cv2.EVENT_LBUTTONUP = 304
+mock_cv2.EVENT_RBUTTONUP = 305
+mock_cv2.EVENT_MBUTTONUP = 306
+mock_cv2.EVENT_LBUTTONDBLCLK = 307
+mock_cv2.EVENT_RBUTTONDBLCLK = 308
+mock_cv2.EVENT_MBUTTONDBLCLK = 309
+
+# Interpolation methods
+mock_cv2.INTER_NEAREST = 400
+mock_cv2.INTER_LINEAR = 401
+mock_cv2.INTER_CUBIC = 402
+mock_cv2.INTER_AREA = 403
+mock_cv2.INTER_LANCZOS4 = 404
+
+# Border types
+mock_cv2.BORDER_CONSTANT = 500
+mock_cv2.BORDER_REPLICATE = 501
+mock_cv2.BORDER_REFLECT = 502
+mock_cv2.BORDER_WRAP = 503
+mock_cv2.BORDER_REFLECT_101 = 504
+mock_cv2.BORDER_TRANSPARENT = 505
+mock_cv2.BORDER_DEFAULT = 506
+mock_cv2.BORDER_ISOLATED = 507
 
 # Apply the mock before any imports
 sys.modules["cv2"] = mock_cv2
@@ -598,13 +670,116 @@ def sample_video() -> Path:
 @pytest.fixture
 def processor_config() -> ProcessingConfigType:
     """Fixture providing a processor configuration for testing."""
-    return ProcessingConfig(
-        max_concurrent_uploads=1,
-        test_mode=True
-    )
+    return ProcessingConfig(max_concurrent_uploads=1, test_mode=True)
 
 
 @pytest.fixture
 def sample_frame() -> np.ndarray:
     """Fixture providing a sample video frame for testing."""
     return np.zeros((1080, 1920, 3), dtype=np.uint8)
+
+
+@pytest.fixture(autouse=True)
+def mock_cv2(monkeypatch):
+    """Mock cv2 module for testing.
+
+    This is an autouse fixture that will be applied to all tests.
+    It properly mocks all cv2 functionality used in the codebase.
+
+    Args:
+        monkeypatch: pytest monkeypatch fixture
+
+    Returns:
+        MagicMock: Mocked cv2 module
+    """
+    # Create the main mock
+    mock_cv2 = MagicMock()
+
+    # Create a mock for VideoCapture
+    mock_video_capture_instance = MagicMock()
+    mock_video_capture_instance.isOpened.return_value = True
+    # Create a real numpy array for read to return
+    real_frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+    mock_video_capture_instance.read.return_value = (True, real_frame)
+    mock_video_capture_instance.release.return_value = None
+
+    # Configure get method to return appropriate values for different properties
+    def mock_get(prop):
+        prop_values = {
+            mock_cv2.CAP_PROP_FRAME_WIDTH: 1280,
+            mock_cv2.CAP_PROP_FRAME_HEIGHT: 720,
+            mock_cv2.CAP_PROP_FPS: 30.0,
+            mock_cv2.CAP_PROP_FRAME_COUNT: 300,
+            mock_cv2.CAP_PROP_POS_FRAMES: 0,
+            mock_cv2.CAP_PROP_POS_MSEC: 0,
+            mock_cv2.CAP_PROP_FOURCC: 828601953,  # 'avc1'
+            mock_cv2.CAP_PROP_FORMAT: 0,
+        }
+        return prop_values.get(prop, 0)
+
+    mock_video_capture_instance.get.side_effect = mock_get
+
+    # Set up VideoCapture class
+    mock_video_capture = MagicMock(return_value=mock_video_capture_instance)
+    mock_cv2.VideoCapture = mock_video_capture
+
+    # Create mock functionality for cv2.cvtColor that returns a real numpy array
+    def mock_cvtColor(src, code):
+        # Just return the source array as is for simplicity
+        return src.copy()
+
+    mock_cv2.cvtColor = mock_cvtColor
+
+    # Set up necessary constants
+    mock_cv2.CAP_PROP_FRAME_WIDTH = 3
+    mock_cv2.CAP_PROP_FRAME_HEIGHT = 4
+    mock_cv2.CAP_PROP_FPS = 5
+    mock_cv2.CAP_PROP_FRAME_COUNT = 7
+    mock_cv2.CAP_PROP_POS_FRAMES = 1
+    mock_cv2.CAP_PROP_POS_MSEC = 0
+    mock_cv2.CAP_PROP_FOURCC = 6
+    mock_cv2.CAP_PROP_FORMAT = 8
+
+    # Set up other commonly used cv2 functions and constants
+    mock_cv2.COLOR_BGR2RGB = 4
+    mock_cv2.COLOR_RGB2BGR = 5
+    mock_cv2.COLOR_BGR2GRAY = 6
+    mock_cv2.COLOR_RGB2GRAY = 7
+    mock_cv2.INTER_LINEAR = 1
+    mock_cv2.INTER_NEAREST = 0
+
+    # Mock common image manipulation functions using real numpy arrays
+    def mock_resize(img, dsize, **kwargs):
+        # Return a real numpy array of the specified size
+        return np.zeros(dsize[::-1] + (3,), dtype=np.uint8)
+
+    mock_cv2.resize = mock_resize
+    mock_cv2.imwrite = MagicMock(return_value=True)
+    mock_cv2.imread = MagicMock(return_value=np.zeros((720, 1280, 3), dtype=np.uint8))
+
+    # Patch cv2 module properly
+    monkeypatch.setitem(sys.modules, "cv2", mock_cv2)
+
+    return mock_cv2
+
+
+@pytest.fixture(autouse=True)
+def mock_pil(monkeypatch):
+    """Mock PIL.Image for testing."""
+    mock_pil_image = MagicMock()
+
+    # Create a class for PIL.Image with proper array interface support
+    class MockImage:
+        @staticmethod
+        def fromarray(array):
+            # Create a MagicMock that has __array_interface__ attribute
+            mock_img = MagicMock()
+            # Set the __array_interface__ attribute as a property
+            mock_img.__array_interface__ = array.__array_interface__
+            # Ensure numpy can access the array interface
+            mock_img.__array__ = lambda *args, **kwargs: array
+            return mock_img
+
+    mock_pil_image.Image = MockImage
+    monkeypatch.setattr("PIL.Image", mock_pil_image.Image)
+    return mock_pil_image

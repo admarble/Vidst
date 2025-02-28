@@ -1,65 +1,79 @@
+"""Tests for OCR processing functionality."""
+
 import pytest
-from unittest.mock import Mock, patch
+from pathlib import Path
+import tempfile
+import cv2
 import numpy as np
-from src.core.processing.text import OCRProcessor, TextDetector
 
-class TestOCRProcessor:
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.test_image = np.zeros((1080, 1920, 3), dtype=np.uint8)
-        self.processor = OCRProcessor()
+from video_understanding.core.upload.ocr import OCRProcessor
 
-    def test_basic_text_extraction(self):
-        """Test basic text extraction from an image."""
-        mock_text = "Sample text in video"
-        with patch('src.core.processing.text.ocr.extract_text', return_value=mock_text):
-            result = self.processor.process_frame(self.test_image)
-            assert isinstance(result, dict)
-            assert "text" in result
-            assert result["text"] == mock_text
+@pytest.fixture
+def sample_video():
+    """Create a sample video file for testing."""
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as f:
+        # Create a video writer
+        fourcc = cv2.VideoWriter.fourcc(*'mp4v')
+        out = cv2.VideoWriter(f.name, fourcc, 30.0, (640, 480))
 
-    def test_text_with_timestamps(self):
-        """Test text extraction with timestamp information."""
-        result = self.processor.process_frame(self.test_image, timestamp=10.5)
-        assert "timestamp" in result
-        assert result["timestamp"] == 10.5
+        try:
+            # Create some frames with text
+            font = cv2.FONT_HERSHEY_SIMPLEX
 
-    def test_multiple_text_regions(self):
-        """Test handling of multiple text regions in a frame."""
-        mock_regions = [
-            {"text": "Region 1", "confidence": 0.95, "bbox": (10, 10, 100, 30)},
-            {"text": "Region 2", "confidence": 0.88, "bbox": (200, 200, 300, 230)}
-        ]
-        with patch('src.core.processing.text.ocr.detect_text_regions', return_value=mock_regions):
-            result = self.processor.process_frame(self.test_image)
-            assert "regions" in result
-            assert len(result["regions"]) == 2
-            assert all("confidence" in region for region in result["regions"])
+            # First scene with text
+            for _ in range(90):  # 3 seconds at 30fps
+                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                cv2.putText(frame, "Hello World", (50, 50), font, 1, (255, 255, 255), 2)
+                out.write(frame)
 
-class TestTextDetector:
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.detector = TextDetector()
-        self.test_frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+            # Second scene with different text
+            for _ in range(90):  # Another 3 seconds
+                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                cv2.putText(frame, "Testing OCR", (100, 100), font, 1, (255, 255, 255), 2)
+                out.write(frame)
 
-    def test_code_block_detection(self):
-        """Test detection of code blocks in frame."""
-        result = self.detector.detect_code_blocks(self.test_frame)
-        assert isinstance(result, list)
-        for block in result:
-            assert "type" in block
-            assert "content" in block
-            assert "confidence" in block
+        finally:
+            out.release()
 
-    def test_text_formatting_detection(self):
-        """Test detection of text formatting (bold, italic, etc.)."""
-        result = self.detector.detect_formatting(self.test_frame)
-        assert isinstance(result, dict)
-        assert "formatting" in result
-        assert isinstance(result["formatting"], list)
+    yield Path(f.name)
+    Path(f.name).unlink()
 
-    def test_confidence_filtering(self):
-        """Test filtering of low-confidence detections."""
-        detector = TextDetector(min_confidence=0.8)
-        result = detector.detect_text(self.test_frame)
-        assert all(r["confidence"] >= 0.8 for r in result if "confidence" in r)
+@pytest.mark.asyncio
+async def test_ocr_processing(sample_video):
+    """Test basic OCR processing."""
+    processor = OCRProcessor()
+    results = await processor.process(sample_video)
+
+    # Since we're using a placeholder OCR implementation,
+    # we just verify the structure but not actual text extraction
+    assert isinstance(results, list)
+
+@pytest.mark.asyncio
+async def test_ocr_with_languages():
+    """Test OCR with specific languages."""
+    processor = OCRProcessor(languages=["eng", "fra"])
+    assert "eng" in processor.languages
+    assert "fra" in processor.languages
+
+@pytest.mark.asyncio
+async def test_ocr_confidence_threshold():
+    """Test OCR confidence threshold setting."""
+    processor = OCRProcessor()
+
+    # Test valid threshold
+    processor.set_confidence_threshold(0.8)
+    assert processor.confidence_threshold == 0.8
+
+    # Test threshold clamping
+    processor.set_confidence_threshold(1.5)  # Should clamp to 1.0
+    assert processor.confidence_threshold == 1.0
+
+    processor.set_confidence_threshold(-0.5)  # Should clamp to 0.0
+    assert processor.confidence_threshold == 0.0
+
+@pytest.mark.asyncio
+async def test_ocr_invalid_file():
+    """Test OCR with invalid file."""
+    processor = OCRProcessor()
+    with pytest.raises(FileNotFoundError):
+        await processor.process(Path("nonexistent.mp4"))

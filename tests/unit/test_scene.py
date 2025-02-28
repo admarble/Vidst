@@ -1,77 +1,92 @@
+"""Tests for scene detection functionality."""
+
 import pytest
-from unittest.mock import Mock, patch
+from pathlib import Path
+import tempfile
+import cv2
 import numpy as np
-from src.core.processing.scene import SceneAnalyzer, SceneMetadata
 
-class TestSceneAnalyzer:
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.analyzer = SceneAnalyzer()
-        self.test_frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
-        self.test_scene = {
-            "start_time": 0.0,
-            "end_time": 5.0,
-            "frames": [self.test_frame] * 10
-        }
+from video_understanding.core.upload.scene import SceneDetector
 
-    def test_scene_content_analysis(self):
-        """Test analysis of scene content."""
-        result = self.analyzer.analyze_scene(self.test_scene)
-        assert isinstance(result, dict)
-        assert "content_type" in result
-        assert "confidence" in result
-        assert "metadata" in result
+@pytest.fixture
+def sample_video():
+    """Create a sample video file for testing."""
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as f:
+        # Create a video writer
+        fourcc = cv2.VideoWriter.fourcc(*'mp4v')
+        out = cv2.VideoWriter(f.name, fourcc, 30.0, (640, 480))
 
-    def test_scene_transition_detection(self):
-        """Test detection of scene transitions."""
-        scenes = [self.test_scene, self.test_scene]
-        transitions = self.analyzer.analyze_transitions(scenes)
-        assert isinstance(transitions, list)
-        assert len(transitions) == 1  # One transition between two scenes
-        assert all("type" in t for t in transitions)
+        try:
+            # Create some frames
+            for _ in range(90):  # 3 seconds at 30fps
+                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                # Add some content to make scene detection possible
+                cv2.rectangle(frame, (100, 100), (200, 200), (0, 255, 0), -1)
+                out.write(frame)
 
-    def test_scene_duration_validation(self):
-        """Test validation of scene duration."""
-        invalid_scene = {
-            "start_time": 0.0,
-            "end_time": 0.5,  # Too short
-            "frames": [self.test_frame]
-        }
-        with pytest.raises(ValueError):
-            self.analyzer.analyze_scene(invalid_scene)
+            # Create a scene change
+            for _ in range(90):  # Another 3 seconds
+                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                # Different content
+                cv2.circle(frame, (320, 240), 100, (0, 0, 255), -1)
+                out.write(frame)
 
-class TestSceneMetadata:
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.metadata = SceneMetadata()
-        self.test_data = {
-            "duration": 5.0,
-            "frame_count": 150,
-            "average_brightness": 0.5
-        }
+        finally:
+            out.release()
 
-    def test_metadata_creation(self):
-        """Test creation of scene metadata."""
-        meta = self.metadata.create(self.test_data)
-        assert isinstance(meta, dict)
-        assert "duration" in meta
-        assert "frame_count" in meta
-        assert "timestamp" in meta
+    yield Path(f.name)
+    Path(f.name).unlink()
 
-    def test_metadata_validation(self):
-        """Test validation of metadata fields."""
-        invalid_data = {
-            "duration": -1.0,  # Invalid duration
-            "frame_count": 150
-        }
-        with pytest.raises(ValueError):
-            self.metadata.create(invalid_data)
+@pytest.mark.asyncio
+async def test_scene_detection(sample_video):
+    """Test basic scene detection."""
+    detector = SceneDetector()
+    scenes = await detector.detect(sample_video)
 
-    def test_metadata_aggregation(self):
-        """Test aggregation of metadata from multiple scenes."""
-        scene_list = [self.test_data] * 3
-        aggregated = self.metadata.aggregate(scene_list)
-        assert isinstance(aggregated, dict)
-        assert "total_duration" in aggregated
-        assert "total_frames" in aggregated
-        assert aggregated["total_frames"] == 450  # 3 * 150
+    assert len(scenes) > 0
+    for scene in scenes:
+        assert "start_frame" in scene
+        assert "end_frame" in scene
+        assert "start_time" in scene
+        assert "end_time" in scene
+        assert "duration" in scene
+        assert scene["duration"] > 0
+
+@pytest.mark.asyncio
+async def test_scene_detection_config():
+    """Test scene detector configuration."""
+    detector = SceneDetector()
+
+    # Test min scene duration
+    detector.set_min_scene_duration(5.0)
+    assert detector.min_scene_duration == 5.0
+
+    # Test max scenes
+    detector.set_max_scenes(100)
+    assert detector.max_scenes == 100
+
+    # Test threshold
+    detector.set_threshold(50.0)
+    assert detector.threshold == 50.0
+
+@pytest.mark.asyncio
+async def test_scene_detection_invalid_file():
+    """Test scene detection with invalid file."""
+    detector = SceneDetector()
+    scenes = await detector.detect(Path("nonexistent.mp4"))
+    assert len(scenes) == 0
+
+@pytest.mark.asyncio
+async def test_frame_difference():
+    """Test frame difference calculation."""
+    detector = SceneDetector()
+
+    # Create two different frames
+    frame1 = np.zeros((480, 640, 3), dtype=np.uint8)
+    cv2.rectangle(frame1, (100, 100), (200, 200), (0, 255, 0), -1)
+
+    frame2 = np.zeros((480, 640, 3), dtype=np.uint8)
+    cv2.circle(frame2, (320, 240), 100, (0, 0, 255), -1)
+
+    diff = detector._calculate_frame_diff(frame1, frame2)
+    assert diff > 0

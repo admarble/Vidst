@@ -9,6 +9,7 @@ import logging
 import os
 from pathlib import Path
 from typing import Optional
+import asyncio
 
 from video_understanding.utils.constants import (
     UPLOAD_DIR_MODE,
@@ -286,3 +287,50 @@ class SecurityValidator:
         """
         self.validate_file(file_path)
         self.secure_file(file_path)
+
+
+class SecurityScanner:
+    """Scans uploaded videos for security issues."""
+
+    def __init__(self):
+        """Initialize the security scanner."""
+        self.virus_scan_enabled = True
+        self.content_validation_enabled = True
+
+    async def scan(self, file_path: Path) -> None:
+        """Scan a file for security issues.
+
+        Args:
+            file_path: Path to file to scan
+
+        Raises:
+            SecurityError: If security issues are found
+        """
+        if not file_path.exists():
+            raise SecurityError(f"File not found: {file_path}")
+
+        tasks = []
+        if self.virus_scan_enabled:
+            tasks.append(self._scan_viruses(file_path))
+        if self.content_validation_enabled:
+            tasks.append(self._validate_content(file_path))
+
+        await asyncio.gather(*tasks)
+
+    async def _scan_viruses(self, file_path: Path) -> None:
+        """Scan file for viruses."""
+        # TODO: Implement virus scanning
+        logger.info(f"Virus scan completed for {file_path}")
+
+    async def _validate_content(self, file_path: Path) -> None:
+        """Validate file content."""
+        # TODO: Implement content validation
+        logger.info(f"Content validation completed for {file_path}")
+
+    def set_virus_scan(self, enabled: bool) -> None:
+        """Enable/disable virus scanning."""
+        self.virus_scan_enabled = enabled
+
+    def set_content_validation(self, enabled: bool) -> None:
+        """Enable/disable content validation."""
+        self.content_validation_enabled = enabled

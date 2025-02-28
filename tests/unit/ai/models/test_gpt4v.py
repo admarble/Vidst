@@ -6,13 +6,13 @@ from unittest.mock import mock_open, patch
 import pytest
 
 from video_understanding.ai.exceptions import ModelError
-from video_understanding.ai.models.gpt4v import GPT4VisionModel
+from video_understanding.ai.models.gpt4v import GPT4VModel
 
 
 @pytest.fixture
 def model():
     """Create a test model instance."""
-    return GPT4VisionModel(api_key="test_key")
+    return GPT4VModel(config={"api_key": "test_key"})
 
 
 @pytest.fixture
@@ -25,8 +25,8 @@ def test_image(tmp_path):
 
 def test_model_initialization():
     """Test model initialization."""
-    model = GPT4VisionModel(api_key="test_key")
-    assert model.api_key == "test_key"
+    model = GPT4VModel(config={"api_key": "test_key"})
+    assert model.config.api_key == "test_key"
 
 
 @pytest.mark.asyncio

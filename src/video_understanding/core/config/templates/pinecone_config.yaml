@@ -1,0 +1,60 @@
+# Pinecone Vector Database Configuration
+
+# API credentials
+api:
+  # Your Pinecone API key - replace with your actual key or use environment variable
+  api_key: ${PINECONE_API_KEY}
+  # Pinecone environment
+  environment: ${PINECONE_ENVIRONMENT}
+
+# Index configuration
+indexes:
+  # Default index name for video embeddings
+  default_index: "vidst_embeddings"
+  # Vector dimension for embeddings
+  dimension: 1536
+  # Metric for similarity search (cosine, dotproduct, euclidean)
+  metric: "cosine"
+  # Number of pods for the index (affects performance and cost)
+  pods: 1
+  # Pod type (affects performance and cost)
+  pod_type: "p1.x1"
+  # Replication factor (for high availability)
+  replicas: 1
+
+# Namespace configuration
+namespaces:
+  # Namespace for video frames
+  frames: "video_frames"
+  # Namespace for audio transcripts
+  audio: "audio_transcripts"
+  # Namespace for extracted text
+  text: "extracted_text"
+  # Namespace for scene metadata
+  scenes: "scene_metadata"
+
+# Query options
+query:
+  # Default top-k results to return
+  top_k: 50
+  # Include metadata in query results
+  include_metadata: true
+  # Include vectors in query results
+  include_vectors: false
+  # Score threshold for filtering results (0-1)
+  score_threshold: 0.7
+
+# Performance options
+performance:
+  # Enable client-side caching
+  enable_caching: true
+  # Cache time-to-live in seconds
+  cache_ttl: 3600
+  # Maximum batch size for upserts
+  max_batch_size: 100
+  # Connection timeout in seconds
+  timeout: 15
+  # Enable retry on failure
+  retry_on_failure: true
+  # Maximum retries
+  max_retries: 3

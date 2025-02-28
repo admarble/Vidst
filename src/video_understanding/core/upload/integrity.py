@@ -10,6 +10,9 @@ from typing import Optional, Tuple
 
 import cv2
 import magic
+import hashlib
+import asyncio
+from typing import Dict
 
 from video_understanding.utils.constants import (
     VALID_VIDEO_FORMATS,
@@ -18,6 +21,7 @@ from video_understanding.utils.constants import (
 )
 from video_understanding.utils.exceptions import VideoIntegrityError, VideoFormatError
 from video_understanding.models.video import VideoMetadata
+from ..exceptions import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -302,3 +306,57 @@ class VideoIntegrityChecker:
 
         except Exception as e:
             raise VideoIntegrityError(f"Failed to estimate bitrate: {e}")
+
+
+class FileIntegrityChecker:
+    """Checks integrity of uploaded video files."""
+
+    def __init__(self):
+        """Initialize the integrity checker."""
+        self.chunk_size = 8192  # 8KB chunks for reading
+
+    async def check(self, file_path: Path) -> None:
+        """Check file integrity.
+
+        Args:
+            file_path: Path to file to check
+
+        Raises:
+            IntegrityError: If integrity check fails
+        """
+        if not file_path.exists():
+            raise IntegrityError(f"File not found: {file_path}")
+
+        tasks = [
+            self._check_file_size(file_path),
+            self._check_file_format(file_path),
+            self._calculate_checksums(file_path)
+        ]
+
+        await asyncio.gather(*tasks)
+
+    async def _check_file_size(self, file_path: Path) -> None:
+        """Check if file size is within limits."""
+        size_mb = file_path.stat().st_size / (1024 * 1024)  # Convert to MB
+        if size_mb > 2048:  # 2GB limit
+            raise IntegrityError(f"File too large: {size_mb:.1f}MB > 2048MB")
+
+    async def _check_file_format(self, file_path: Path) -> None:
+        """Check if file format is supported."""
+        if file_path.suffix.lower() not in [".mp4", ".avi", ".mov"]:
+            raise IntegrityError(f"Unsupported file format: {file_path.suffix}")
+
+    async def _calculate_checksums(self, file_path: Path) -> Dict[str, str]:
+        """Calculate file checksums."""
+        md5 = hashlib.md5()
+        sha256 = hashlib.sha256()
+
+        with open(file_path, "rb") as f:
+            while chunk := f.read(self.chunk_size):
+                md5.update(chunk)
+                sha256.update(chunk)
+
+        return {
+            "md5": md5.hexdigest(),
+            "sha256": sha256.hexdigest()
+        }

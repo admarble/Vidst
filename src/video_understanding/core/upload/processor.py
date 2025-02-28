@@ -7,8 +7,9 @@ the various components involved in video upload handling.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from uuid import UUID, uuid4
+import asyncio
 
 import cv2
 import numpy as np
@@ -26,13 +27,18 @@ from video_understanding.models.video import (
     VideoMetadata,
 )
 from video_understanding.core.upload.directory import DirectoryManager
-from video_understanding.core.upload.integrity import VideoIntegrityChecker
-from video_understanding.core.upload.security import SecurityValidator
+from video_understanding.core.upload.integrity import VideoIntegrityChecker as FileIntegrityChecker
+from video_understanding.core.upload.security import SecurityValidator as SecurityScanner
 from video_understanding.core.upload.quarantine import QuarantineManager
 from video_understanding.core.upload.config import ProcessorConfig
 from video_understanding.core.upload.context import UploadContext
 from video_understanding.core.upload.progress import ProgressTracker
 from video_understanding.core.upload.scene import SceneDetector, SceneChange
+from video_understanding.core.upload.detection import ObjectDetector
+from video_understanding.core.upload.ocr import TextExtractor
+from video_understanding.core.upload.config import UploadConfig
+from video_understanding.core.upload.ocr import OCRProcessor
+from video_understanding.exceptions import VideoUnderstandingError
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +74,8 @@ class UploadProcessor:
             test_mode: Whether to run in test mode
         """
         self.directory_manager = DirectoryManager(upload_dir, test_mode)
-        self.integrity_checker = VideoIntegrityChecker(test_mode)
-        self.security_validator = SecurityValidator(self.directory_manager, test_mode)
+        self.integrity_checker = FileIntegrityChecker(test_mode)
+        self.security_validator = SecurityScanner(self.directory_manager, test_mode)
         self.quarantine_manager = QuarantineManager(self.directory_manager, test_mode)
         self.test_mode = test_mode
 
@@ -120,7 +126,7 @@ class UploadProcessor:
                 final_path = self._move_to_completed(processed_path, video.id)
 
                 # Update video information
-                video.file_info.file_path = str(final_path)
+                video.file_info.file_path = final_path
                 self._update_status(video, ProcessingStatus.COMPLETED)
 
                 return video
@@ -152,7 +158,7 @@ class UploadProcessor:
         """
         file_info = VideoFile(
             filename=file_path.name,
-            file_path=str(file_path),
+            file_path=file_path,
             format=file_path.suffix[1:].upper(),
             file_size=file_path.stat().st_size,
         )
@@ -401,30 +407,26 @@ class VideoProcessor:
 
         Args:
             config: Processing configuration
+
+        Raises:
+            ConfigurationError: If configuration is invalid
         """
+        # Validate configuration
+        config.validate()
+
         self.config = config
+        self._progress = ProgressTracker(video_id=None)
         self._current_frame = 0
-        self._progress = None
-        self._scene_detector = SceneDetector()
-
-        # Initialize object detector if enabled
-        self.detector = None
-        if config.detection_enabled:
-            from video_understanding.core.upload.detection import ObjectDetector
-            self.detector = ObjectDetector(
-                model_path=config.object_detection_model,
-                confidence_threshold=config.detection_confidence,
-            )
-
-        # Initialize text extractor if enabled
-        self.text_extractor = None
-        if config.ocr_enabled:
-            from video_understanding.core.upload.ocr import TextExtractor
-            self.text_extractor = TextExtractor(
-                languages=config.ocr_languages,
-                confidence_threshold=config.ocr_confidence,
-                gpu=config.ocr_gpu,
-            )
+        self.scene_detector = SceneDetector()
+        self.object_detector = ObjectDetector(
+            confidence_threshold=config.detection_confidence,
+            model_path=config.object_detection_model,
+        )
+        self.text_extractor = TextExtractor(
+            languages=config.ocr_languages,
+            confidence_threshold=config.ocr_confidence,
+            gpu=config.ocr_gpu,
+        )
 
     def process(self, video: Video) -> UploadContext:
         """Process a video file.
@@ -635,9 +637,9 @@ class VideoProcessor:
         }
 
         # Run object detection if enabled
-        if self.detector is not None:
+        if self.object_detector is not None:
             try:
-                detections = self.detector(frame, frame_number)
+                detections = self.object_detector(frame, frame_number)
                 result["objects"] = [obj.to_dict() for obj in detections]
             except Exception as e:
                 logger.warning(f"Object detection failed for frame {frame_number}: {e}")
@@ -646,7 +648,7 @@ class VideoProcessor:
         # Run text extraction if enabled
         if self.text_extractor is not None:
             try:
-                texts = self.text_extractor(frame, frame_number)
+                texts = self.text_extractor.extract_text(frame)
                 result["text"] = [text.to_dict() for text in texts]
             except Exception as e:
                 logger.warning(f"Text extraction failed for frame {frame_number}: {e}")
@@ -672,7 +674,7 @@ class VideoProcessor:
         }
 
         # Detect scene changes
-        scene_change = self._scene_detector.detect_change(
+        scene_change = self.scene_detector.detect_change(
             frame,
             frame_number=self._current_frame,
             timestamp=self._current_frame / self._get_fps(),
@@ -765,3 +767,63 @@ class VideoProcessor:
                 cap.release()
         except Exception:
             return 30.0
+
+
+class VideoUploader:
+    """Handles video upload processing and validation."""
+
+    def __init__(self, config: Optional[UploadConfig] = None):
+        """Initialize the uploader with optional config."""
+        self.config = config or UploadConfig()
+        self.integrity_checker = FileIntegrityChecker()
+        self.security_scanner = SecurityScanner()
+        self.scene_detector = SceneDetector()
+        self.ocr_processor = OCRProcessor()
+
+    async def process_upload(self, file_path: Path) -> Dict[str, Any]:
+        """Process an uploaded video file.
+
+        Args:
+            file_path: Path to the uploaded video file
+
+        Returns:
+            Dict containing processing results
+
+        Raises:
+            VideoUnderstandingError: If processing fails
+        """
+        try:
+            # Create processing context
+            context = UploadContext(file_path)
+
+            # Run integrity checks
+            await self.integrity_checker.check(file_path)
+
+            # Scan for security issues
+            await self.security_scanner.scan(file_path)
+
+            # Detect scenes
+            scenes = await self.scene_detector.detect(file_path)
+            context.add_scenes(scenes)
+
+            # Extract text with OCR
+            text = await self.ocr_processor.process(file_path)
+            context.add_text(text)
+
+            return context.get_results()
+
+        except Exception as e:
+            logger.error(f"Error processing upload {file_path}: {str(e)}")
+            raise VideoUnderstandingError(f"Upload processing failed: {str(e)}")
+
+    async def process_batch(self, file_paths: List[Path]) -> List[Dict[str, Any]]:
+        """Process multiple uploaded files concurrently.
+
+        Args:
+            file_paths: List of paths to uploaded files
+
+        Returns:
+            List of processing results for each file
+        """
+        tasks = [self.process_upload(path) for path in file_paths]
+        return await asyncio.gather(*tasks, return_exceptions=True)

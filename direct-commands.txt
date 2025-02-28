@@ -1,0 +1,13 @@
+# Try these direct commands in Cursor MCP configuration:
+
+# Option 1: Direct script with environment variable inline
+PERPLEXITY_API_KEY=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 /Users/tony/Documents/Vidst/venv/bin/perplexity-mcp
+
+# Option 2: Using python -m to run the module
+PERPLEXITY_API_KEY=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 python -m perplexity_mcp
+
+# Option 3: NPX direct command
+npx -y @smithery/cli run @daniel-lxs/mcp-perplexity --config "{\"perplexityApiKey\":\"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\"}"
+
+# Option 4: Basic command with no options (sometimes simpler works better)
+/Users/tony/Documents/Vidst/venv/bin/perplexity-mcp

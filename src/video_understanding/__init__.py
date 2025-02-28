@@ -43,7 +43,7 @@ from .core.metrics import (
 # Import AI models
 from .ai.models.base import BaseModel
 from .ai.models.gemini import GeminiModel
-from .ai.models.gpt4v import GPT4VisionModel
+from .ai.models.gpt4v import GPT4VModel
 from .ai.models.twelve_labs import TwelveLabsModel
 from .ai.models.whisper import WhisperModel
 from .ai.pipeline import VideoPipeline
@@ -51,6 +51,7 @@ from .ai.pipeline import VideoPipeline
 # Import storage components
 from .storage.metadata import MetadataStore
 from .storage.cache import CacheStore
+from .storage.vector import VectorStorage, VectorStorageConfig
 
 # Define public API
 __all__ = [
@@ -81,7 +82,7 @@ __all__ = [
     # AI models
     "BaseModel",
     "GeminiModel",
-    "GPT4VisionModel",
+    "GPT4VModel",
     "TwelveLabsModel",
     "WhisperModel",
     "VideoPipeline",
@@ -89,4 +90,6 @@ __all__ = [
     # Storage
     "MetadataStore",
     "CacheStore",
+    "VectorStorage",
+    "VectorStorageConfig",
 ]

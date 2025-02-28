@@ -1,0 +1,113 @@
+name: Scope Creep Detection
+
+on:
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  detect_scope_creep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for scope creep indicators
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const payload = context.payload;
+            const isIssue = !!payload.issue;
+            const isPR = !!payload.pull_request;
+            
+            // Get the title and body of the issue or PR
+            const title = isIssue ? payload.issue.title : payload.pull_request.title;
+            const body = isIssue ? payload.issue.body : payload.pull_request.body;
+            const combinedText = `${title} ${body}`.toLowerCase();
+            
+            // Words and phrases that might indicate scope creep
+            const scopeCreepIndicators = [
+              'enhance',
+              'advanced',
+              'additional',
+              'extend',
+              'extra',
+              'new feature',
+              'improve',
+              'optimization',
+              'extend',
+              'nice to have',
+              'future',
+              'phase 2',
+              'multilingual',
+              'speaker identification',
+              'multiple language',
+              'accent',
+              'hybrid search',
+              'complex query',
+              'conversational',
+              'query refinement',
+              'relevance tuning',
+              'advanced filtering',
+              'performance tuning',
+              'text layout',
+              'document understanding',
+              'handwriting',
+              'shot composition',
+              'scene classification',
+              'metadata extraction',
+              'comprehensive api',
+              'architectural documentation',
+              'advanced example',
+              'interactive tutorial'
+            ];
+            
+            // Check if any scope creep indicators are present
+            const foundIndicators = scopeCreepIndicators.filter(indicator => 
+              combinedText.includes(indicator)
+            );
+            
+            // If indicators are found, add the scope:creep label and a comment
+            if (foundIndicators.length > 0) {
+              // Create a comment listing the indicators that were found
+              const targetType = isIssue ? 'issue' : 'pull request';
+              const targetNumber = isIssue ? payload.issue.number : payload.pull_request.number;
+              
+              // Add the label
+              if (isIssue) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: payload.issue.number,
+                  labels: ['scope:creep']
+                });
+              } else {
+                // For PRs, we still use the issues API to add labels
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: payload.pull_request.number,
+                  labels: ['scope:creep']
+                });
+              }
+              
+              // Add a comment
+              const comment = `## Potential Scope Creep Detected ⚠️\n\n` +
+                `This ${targetType} has been automatically flagged for potential scope creep based on ` +
+                `the following indicators:\n\n` +
+                foundIndicators.map(i => `- \`${i}\``).join('\n') + 
+                `\n\n### Next Steps:\n` +
+                `1. Review against [Minimum Viable Component Definitions](/Users/tony/Documents/Vidst/refactor/02_planning/vidst_minimum_viable_components.md)\n` +
+                `2. If this is within POC scope, remove the \`scope:creep\` label\n` +
+                `3. If this exceeds POC scope, consider:\n` +
+                `   - Simplifying to fit POC requirements\n` +
+                `   - Adding \`scope:deferred\` label for post-POC implementation\n` +
+                `   - Documenting feature for future development without implementing now\n\n` +
+                `*This is an automated message to help maintain focus on POC requirements.*`;
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: targetNumber,
+                body: comment
+              });
+            }

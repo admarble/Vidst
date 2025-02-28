@@ -1,27 +1,53 @@
-"""Custom exceptions for Twelve Labs integration."""
+"""Twelve Labs API exceptions."""
 
-from video_understanding.core.exceptions import ModelError
+from ...core.exceptions import ModelError
 
 
 class TwelveLabsError(ModelError):
-    """Base exception for Twelve Labs errors."""
+    """Base exception for Twelve Labs API errors."""
+
+    def __init__(self, message: str, cause: Exception | None = None, details: dict | None = None):
+        """Initialize the error.
+
+        Args:
+            message: The error message
+            cause: The underlying cause of this error
+            details: Additional error details
+        """
+        super().__init__(message, cause)
+        self.details = details or {}
 
 
 class RateLimitError(TwelveLabsError):
-    """Rate limit exceeded."""
+    """Exception raised when API rate limits are exceeded."""
+    pass
 
 
 class TaskError(TwelveLabsError):
-    """Task processing error."""
+    """Exception raised when a task fails or is invalid."""
+    pass
 
 
 class ValidationError(TwelveLabsError):
-    """Input validation error."""
+    """Exception raised when input validation fails."""
+    pass
 
 
 class APIError(TwelveLabsError):
-    """API communication error."""
+    """Exception raised when API requests fail."""
+    pass
 
 
 class ResourceError(TwelveLabsError):
-    """Resource management error."""
+    """Exception raised when resource access fails."""
+    pass
+
+
+__all__ = [
+    'TwelveLabsError',
+    'RateLimitError',
+    'TaskError',
+    'ValidationError',
+    'APIError',
+    'ResourceError',
+]
