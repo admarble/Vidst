@@ -247,4 +247,3 @@ Scorer.prototype.score = function (result) {
 
     return score;
 };
-
