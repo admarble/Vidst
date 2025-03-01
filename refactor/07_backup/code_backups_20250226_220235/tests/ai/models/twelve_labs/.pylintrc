@@ -1,0 +1,9 @@
+[MESSAGES CONTROL]
+disable=
+    W0621,  # redefined-outer-name - expected with pytest fixtures
+    W0212,  # protected-access - sometimes necessary in tests
+    C0411,  # wrong-import-order - handled by other tools
+    E1101,  # no-member - false positives with dynamic attributes
+    R0801,  # duplicate-code - common in tests
+    C0116,  # missing-function-docstring - docstrings present in test names
+    C0115,  # missing-class-docstring - docstrings present in test names

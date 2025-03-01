@@ -1,0 +1,18 @@
+
+﻿src.storage.metadata.update_metadata
+
+======================================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.storage.metadata
+
+.. autofunction:: update_metadata

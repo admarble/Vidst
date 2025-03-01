@@ -1,0 +1,41 @@
+{% extends "!page.html" %}
+
+{# Remove duplicate viewport meta tag #}
+{% block htmltitle %}
+<title>{{ title|striptags|e }}{{ titlesuffix }}</title>
+<meta charset="utf-8" />
+{% endblock %}
+
+{# Add proper ARIA attributes to headings #}
+{% block body %}
+{% if title %}
+<h1 role="heading" aria-level="1">{{ title }}</h1>
+{% endif %}
+
+{# Convert caption divs to proper headings with ARIA #}
+{% if theme_show_nav_version %}
+<div class="version-info">
+    <p class="caption" role="heading" aria-level="2">
+        <span class="caption-text">Version: {{ version }}</span>
+    </p>
+</div>
+{% endif %}
+
+{# Process section headings #}
+{% if self.body %}
+<div class="section-content">
+    {{ super() }}
+</div>
+{% endif %}
+{% endblock %}
+
+{# Add proper form labels #}
+{% block sidebarsearch %}
+<div role="search">
+    <form class="search" action="{{ pathto('search') }}" method="get">
+        <label for="q" class="visually-hidden">Search Documentation</label>
+        <input type="text" name="q" id="q" class="form-input" placeholder="Search docs" />
+        <input type="submit" value="Go" class="search-button" />
+    </form>
+</div>
+{% endblock %}

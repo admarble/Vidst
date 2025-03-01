@@ -1,0 +1,18 @@
+
+﻿src.core.output.save_result
+
+=============================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.core.output
+
+.. autofunction:: save_result

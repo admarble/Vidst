@@ -1,0 +1,51 @@
+# Vidst API Credentials Configuration
+# This is a template file. Create a copy named '.env' and fill in your actual credentials.
+# Never commit your actual API keys to the repository.
+
+#-------------------------------------------------------
+# Twelve Labs - Used for Scene Detection and Semantic Search
+#-------------------------------------------------------
+# API key from your Twelve Labs account
+TWELVE_LABS_API_KEY=your_api_key_here
+
+# API URL (usually https://api.twelvelabs.io/v1)
+TWELVE_LABS_API_URL=https://api.twelvelabs.io/v1
+
+#-------------------------------------------------------
+# Pinecone - Used for Vector Storage
+#-------------------------------------------------------
+# API key from your Pinecone account
+PINECONE_API_KEY=your_api_key_here
+
+# Environment name (e.g., us-west1-gcp)
+PINECONE_ENVIRONMENT=your_environment_here
+
+# Index name where vectors will be stored
+PINECONE_INDEX_NAME=vidst-vectors
+
+#-------------------------------------------------------
+# Google Document AI - Used for OCR/Text Extraction
+#-------------------------------------------------------
+# Path to your Google Cloud credentials JSON file
+GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+
+# Document AI processor ID
+GOOGLE_DOCUMENT_AI_PROCESSOR_ID=your_processor_id
+
+# Document AI location (e.g., us, eu)
+GOOGLE_DOCUMENT_AI_LOCATION=us
+
+#-------------------------------------------------------
+# OpenAI Whisper API (if applicable) - Used for Audio Transcription
+#-------------------------------------------------------
+# API key from your OpenAI account
+OPENAI_API_KEY=your_api_key_here
+
+#-------------------------------------------------------
+# Development Configuration
+#-------------------------------------------------------
+# Set to 'True' to enable debug mode
+DEBUG=False
+
+# Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+LOG_LEVEL=INFO

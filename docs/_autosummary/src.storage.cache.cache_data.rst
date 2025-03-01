@@ -1,0 +1,18 @@
+
+﻿src.storage.cache.cache_data
+
+==============================
+
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.storage.cache
+
+.. autofunction:: cache_data

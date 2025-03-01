@@ -1,23 +1,93 @@
-# Web Framework
-fastapi==0.109.2
-uvicorn==0.27.1
+# Version Requirements
+# Python: 3.8 (min), 3.10 (recommended) - Some new APIs require 3.8+
+# pip: 21.0 (min), 23.0+ (recommended) - For dependency resolution
+# ffmpeg: 4.4 (min), 5.1+ (recommended) - Required for video/audio processing
+# CUDA: 11.7 (min), 12.0+ (recommended) - Optional: For GPU acceleration with PyTorch
+# Node.js: 16.0 (min), 18.0+ (recommended) - For frontend components
 
-# Database
-sqlalchemy==2.0.25
-alembic==1.13.1
-python-dotenv==1.0.1
+# Core dependencies
+numpy>=1.24.3
+python-dotenv>=1.0.0  # For environment variable management
+pydantic>=2.0.0  # For data validation
+loguru>=0.7.0  # For structured logging
+
+# AI/ML dependencies
+torch>=2.0.0  # For AI model operations
+torchaudio>=2.0.0  # For audio processing with PyTorch
+transformers>=4.30.0  # For transformer models
+sentence-transformers>=2.2.0  # For text embeddings
+ultralytics>=8.0.20  # For object detection with YOLOv8
+
+# Video processing
+opencv-python>=4.7.0.72  # For video frame processing
+moviepy>=1.0.3  # For video manipulation
+ffmpeg-python>=0.2.0  # For video processing and audio extraction
+
+# OCR (Optical Character Recognition)
+# pytesseract and easyocr to be replaced by Document AI
+google-cloud-documentai>=2.24.0  # Google Document AI client library
+google-cloud-storage>=2.8.0  # For handling document storage with Google Cloud
+
+# Audio processing
+openai-whisper>=20230314  # For speech recognition with OpenAI Whisper
+librosa>=0.10.0  # For audio processing
+
+# Vector Storage
+pinecone-client>=2.2.1  # For vector database storage
+faiss-cpu>=1.7.4  # For vector storage and similarity search (hybrid approach)
+
+# API integrations
+# twelvelabs-client>=1.0.0  # Client for Twelve Labs Scene Detection and NL Querying - Commented out as not available on PyPI
+google-generativeai>=0.4.0  # Google Generative AI
+
+# Storage and caching
+redis>=4.5.4  # For caching
+sqlalchemy>=2.0.0  # For database operations
+alembic>=1.13.1  # For database migrations
+
+# AWS integration
+boto3>=1.26.85  # For AWS integration (S3, Lambda, MediaConvert)
+
+# API and web
+fastapi>=0.110.0  # For API endpoints
+uvicorn>=0.28.0  # For ASGI server
+httpx>=0.24.0  # For HTTP client
 
 # Testing
-pytest==8.0.0
-pytest-cov==4.1.0
-httpx==0.26.0
-
-# Utilities
-pydantic==2.6.1
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
+pytest>=7.4.0  # Test framework
+pytest-cov>=4.1.0  # Test coverage
+pytest-asyncio>=0.21.0  # Async test support
+pytest-xdist>=3.5.0  # For parallel test execution
+pytest-timeout>=2.2.0  # For test timeouts
+pytest-benchmark>=4.0.0  # For performance benchmarking
+pytest-mock>=3.12.0  # For mocking in tests
+responses>=0.23.1  # For API mocking
+moto>=4.1.2  # AWS mocking
+locust>=2.15.1  # For performance testing
+docker>=6.0.1  # For container-based integration tests
 
 # Development
-black==24.1.1
-flake8==7.0.0
-isort==5.13.2 
+black>=23.7.0  # Code formatting
+isort>=5.12.0  # Import sorting
+mypy>=1.4.0  # Type checking
+pylint>=2.17.0  # Linting
+flake8>=7.0.0  # Additional linting
+
+# Documentation
+sphinx>=7.2.6
+sphinx-rtd-theme>=2.0.0
+sphinx-autodoc-typehints>=1.25.2
+mkdocs>=1.5.3
+mkdocs-material>=9.5.9
+docstring-parser>=0.15
+pdoc>=14.4.0
+
+# Utilities
+python-magic>=0.4.27
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+psutil>=5.9.8  # System resource monitoring
+backoff>=2.2.1  # For retry mechanisms
+aiohttp>=3.8.0  # Async HTTP client
+requests>=2.31.0  # HTTP client
+typing-extensions>=4.5.0  # Type hinting extensions

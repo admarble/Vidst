@@ -1,0 +1,75 @@
+name: Validate Branch Names
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - develop
+      - 'release/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          echo "Validating branch name: $BRANCH"
+          
+          # Allow main, develop, and release branches
+          if [[ "$BRANCH" == "main" || "$BRANCH" == "develop" || "$BRANCH" =~ ^release/.+ ]]; then
+            echo "✓ Branch is a standard branch: $BRANCH"
+            exit 0
+          fi
+          
+          # Check if branch follows component/issue-number/description pattern
+          if [[ ! $BRANCH =~ ^([a-zA-Z0-9_-]+)/([0-9]+)/([a-zA-Z0-9_-]+) ]]; then
+            echo "✗ Branch name does not follow convention: $BRANCH"
+            echo "  Expected format: component/issue-number/description"
+            echo "  Examples:"
+            echo "    - scene-detection/123/twelve-labs-integration"
+            echo "    - vector-storage/145/pinecone-api"
+            echo "    - ocr/167/fix-accuracy"
+            echo "  Valid components based on the evaluation matrix:"
+            echo "    - scene-detection"
+            echo "    - vector-storage"
+            echo "    - ocr"
+            echo "    - object-detection"
+            echo "    - audio-transcription"
+            echo "    - natural-language-querying"
+            echo "    - file-storage"
+            echo "    - caching"
+            echo "    - video-processing"
+            echo "    - documentation"
+            echo "    - multi (for changes across components)"
+            exit 1
+          fi
+          
+          # Extract component, issue number and description
+          COMPONENT=${BASH_REMATCH[1]}
+          ISSUE_NUMBER=${BASH_REMATCH[2]}
+          DESCRIPTION=${BASH_REMATCH[3]}
+          
+          echo "✓ Branch follows naming convention:"
+          echo "  Component: $COMPONENT"
+          echo "  Issue Number: $ISSUE_NUMBER"
+          echo "  Description: $DESCRIPTION"
+          
+          # Verify component is valid
+          VALID_COMPONENTS=("scene-detection" "vector-storage" "ocr" "object-detection" "audio-transcription" "natural-language-querying" "file-storage" "caching" "video-processing" "documentation" "multi")
+          
+          VALID=false
+          for VALID_COMPONENT in "${VALID_COMPONENTS[@]}"; do
+            if [[ "$COMPONENT" == "$VALID_COMPONENT" ]]; then
+              VALID=true
+              break
+            fi
+          done
+          
+          if [[ "$VALID" != "true" ]]; then
+            echo "✗ Invalid component name: $COMPONENT"
+            echo "  Valid components are: ${VALID_COMPONENTS[*]}"
+            exit 1
+          fi
+          
+          echo "✓ Branch name validation passed"

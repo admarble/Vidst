@@ -1,0 +1,74 @@
+# Google Document AI Configuration
+
+# API credentials
+api:
+  # Path to Google Cloud service account key file
+  credentials_path: ${GOOGLE_APPLICATION_CREDENTIALS}
+  # Google Cloud project ID
+  project_id: ${GOOGLE_CLOUD_PROJECT_ID}
+  # Google Cloud location
+  location: "us-central1"
+
+# Processor configuration
+processors:
+  # Document OCR processor
+  ocr:
+    # Processor ID for general document OCR
+    processor_id: ${DOCUMENT_AI_OCR_PROCESSOR_ID}
+    # Process timeout in seconds
+    timeout: 120
+
+  # Form processor for structured documents
+  form:
+    # Processor ID for form parsing
+    processor_id: ${DOCUMENT_AI_FORM_PROCESSOR_ID}
+    # Process timeout in seconds
+    timeout: 180
+
+  # Code processor for extracting code blocks
+  code:
+    # Processor ID for code extraction
+    processor_id: ${DOCUMENT_AI_CODE_PROCESSOR_ID}
+    # Process timeout in seconds
+    timeout: 150
+
+# Processing options
+processing:
+  # Mime types to process
+  mime_types:
+    - "image/png"
+    - "image/jpeg"
+    - "image/jpg"
+    - "application/pdf"
+
+  # Maximum image size in pixels (width x height)
+  max_image_size: 10000000  # 10 million pixels
+
+  # Image preprocessing
+  preprocessing:
+    # Enable image enhancement
+    enhance_image: true
+    # Enable denoising
+    denoise: true
+    # Enable contrast adjustment
+    adjust_contrast: true
+
+  # Output options
+  output:
+    # Include text anchors in output
+    include_text_anchors: true
+    # Include page layout in output
+    include_page_layout: true
+    # Include style information
+    include_styles: true
+    # Include confidence scores
+    include_confidence: true
+
+# Storage configuration
+storage:
+  # Google Cloud Storage bucket for document storage
+  bucket_name: ${GCS_BUCKET_NAME}
+  # Time-to-live for cached results (in seconds)
+  cache_ttl: 86400  # 24 hours
+  # Enable versioning of processed documents
+  enable_versioning: true

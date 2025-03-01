@@ -1,0 +1,87 @@
+name: Validate Commit Messages
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - develop
+      - 'release/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      
+      - name: Check commit message
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Validating commit message: $COMMIT_MSG"
+          
+          # Check if commit message contains issue reference [#123]
+          if [[ ! $COMMIT_MSG =~ \[#[0-9]+\] ]]; then
+            echo "✗ Commit message does not contain issue reference: $COMMIT_MSG"
+            echo "  Expected format: [#123] type: description"
+            echo "  Examples:"
+            echo "    - [#123] feat: implement Twelve Labs scene detection API"
+            echo "    - [#145] fix: correct vector storage query issues"
+            echo "    - [#167] docs: update API documentation"
+            echo ""
+            echo "  Valid types:"
+            echo "    - feat: A new feature"
+            echo "    - fix: A bug fix"
+            echo "    - docs: Documentation changes"
+            echo "    - style: Formatting changes (whitespace, etc.)"
+            echo "    - refactor: Code refactoring"
+            echo "    - test: Adding/updating tests"
+            echo "    - chore: Build process or auxiliary tool changes"
+            exit 1
+          fi
+          
+          # Extract issue number
+          if [[ $COMMIT_MSG =~ \[#([0-9]+)\] ]]; then
+            ISSUE_NUMBER=${BASH_REMATCH[1]}
+            echo "✓ Issue reference found: #$ISSUE_NUMBER"
+          else
+            echo "✗ Could not extract issue number"
+            exit 1
+          fi
+          
+          # Check if commit message follows type: description format
+          if [[ ! $COMMIT_MSG =~ \[#[0-9]+\]\ +(feat|fix|docs|style|refactor|test|chore):\ +.+ ]]; then
+            echo "✗ Commit message format is incorrect: $COMMIT_MSG"
+            echo "  After the issue reference, expected format: type: description"
+            echo "  Valid types: feat, fix, docs, style, refactor, test, chore"
+            exit 1
+          fi
+          
+          # Extract type and description
+          if [[ $COMMIT_MSG =~ \[#[0-9]+\]\ +([a-z]+):\ +(.+) ]]; then
+            TYPE=${BASH_REMATCH[1]}
+            DESCRIPTION=${BASH_REMATCH[2]}
+            echo "✓ Type: $TYPE"
+            echo "✓ Description: $DESCRIPTION"
+          else
+            echo "✗ Could not extract type and description"
+            exit 1
+          fi
+          
+          # Validate type
+          VALID_TYPES=("feat" "fix" "docs" "style" "refactor" "test" "chore")
+          VALID=false
+          for VALID_TYPE in "${VALID_TYPES[@]}"; do
+            if [[ "$TYPE" == "$VALID_TYPE" ]]; then
+              VALID=true
+              break
+            fi
+          done
+          
+          if [[ "$VALID" != "true" ]]; then
+            echo "✗ Invalid type: $TYPE"
+            echo "  Valid types are: ${VALID_TYPES[*]}"
+            exit 1
+          fi
+          
+          echo "✓ Commit message validation passed"

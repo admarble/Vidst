@@ -1,0 +1,209 @@
+
+API Reference
+
+=============
+
+
+
+
+
+
+
+
+
+
+This section contains detailed API documentation for all components of the Video Understanding AI system.
+
+.. toctree::
+
+   :maxdepth: 2
+
+   ai/index
+   core/index
+   storage/index
+   video/index
+
+Core Components
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+
+---------------
+
+
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: Core
+
+   core/processing
+   core/input
+   core/output
+   core/config
+   core/exceptions
+   core/metrics
+   core/logging
+
+AI Models
+
+
+---------
+
+
+
+
+---------
+
+
+
+
+---------
+
+
+
+
+---------
+
+
+
+
+---------
+
+
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: AI
+
+   ai/models/base
+   ai/models/twelve_labs
+   ai/models/gpt4v
+   ai/models/gemini
+   ai/models/whisper
+   ai/pipeline
+   ai/exceptions
+
+Storage
+
+
+-------
+
+
+
+
+-------
+
+
+
+
+-------
+
+
+
+
+-------
+
+
+
+
+-------
+
+
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: Storage
+
+   storage/vector
+   storage/cache
+   storage/metadata
+   storage/exceptions
+
+Common Utilities
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+
+----------------
+
+
+
+.. toctree::
+
+   :maxdepth: 2
+   :caption: Utilities
+
+   reference
+   cache
+
+Indices and Tables
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+------------------
+
+
+
+
+
+
+
+\* :ref:`modindex`*

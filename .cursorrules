@@ -5,6 +5,7 @@
 Video Understanding AI is a proof-of-concept system that leverages AI models to analyze educational and technical video content. The system processes videos through a multi-stage pipeline, enabling natural language queries about video content.
 
 ### Core Capabilities
+
 - Scene detection and analysis
 - Audio transcription with speaker identification
 - Text extraction from video frames
@@ -12,6 +13,7 @@ Video Understanding AI is a proof-of-concept system that leverages AI models to 
 - Multi-modal AI model integration
 
 ### Success Metrics
+
 - Scene Detection Accuracy: >90%
 - OCR Accuracy: >95%
 - Speech Transcription Accuracy: >95%
@@ -21,6 +23,7 @@ Video Understanding AI is a proof-of-concept system that leverages AI models to 
 ## Getting Started
 
 ### Prerequisites
+
 - Python 3.10+
 - Git LFS (for handling test data)
 - VSCode (recommended IDE)
@@ -33,30 +36,36 @@ Video Understanding AI is a proof-of-concept system that leverages AI models to 
 ### Environment Setup
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/your-org/video-understanding-poc
 cd video-understanding-poc
 ```
 
 2. Create and activate virtual environment:
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # or `venv\Scripts\activate` on Windows
 ```
 
 3. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. Configure environment variables:
+
 ```bash
 cp .env.example .env
 # Edit .env with your API keys and settings
 ```
 
 ### IDE Configuration
+
 VSCode settings are provided in `.vscode/settings.json`:
+
 ```json
 {
   "python.linting.enabled": true,
@@ -70,6 +79,7 @@ VSCode settings are provided in `.vscode/settings.json`:
 ## Project Architecture
 
 ### Directory Structure
+
 ```
 src/
 ├── core/                    # Core processing components
@@ -91,7 +101,9 @@ src/
 ### Key Components
 
 #### Component Base Class
+
 All processing components inherit from BaseComponent:
+
 ```python
 from abc import ABC, abstractmethod
 from typing import Dict, Any
@@ -101,7 +113,7 @@ class BaseComponent(ABC):
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process input data and return results"""
         pass
-    
+
     @abstractmethod
     def validate(self, input_data: Dict[str, Any]) -> bool:
         """Validate input data"""
@@ -109,7 +121,9 @@ class BaseComponent(ABC):
 ```
 
 #### Error Handling
+
 Use custom exceptions for specific error cases:
+
 ```python
 class VideoProcessingError(Exception):
     """Base exception for video processing errors"""
@@ -123,12 +137,15 @@ class VideoFormatError(VideoProcessingError):
 ## Development Workflow
 
 ### Branch Strategy
+
 - `main`: Stable, demo-ready code
 - `develop`: Integration branch
 - Feature branches: `feature/component/description`
 
 ### Development Process
+
 1. Create feature branch from develop:
+
 ```bash
 git checkout develop
 git pull origin develop
@@ -136,6 +153,7 @@ git checkout -b feature/your-feature
 ```
 
 2. Development loop:
+
 ```bash
 # Make changes
 pip install -e .
@@ -147,14 +165,60 @@ git commit -m "feat(component): description"
 ```
 
 3. Submit Pull Request:
+
 - Use PR template
 - Link related issues
 - Add test coverage
 - Get code review
 
+### GitHub Project Board Updates
+
+#### After Commits
+
+After making significant changes or completing features, update the project board:
+
+```bash
+# Update issue status with labels
+gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --add-label "status:ready,component:[COMPONENT]"
+
+# Update issue progress
+gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --body "Component implementation status:
+- [x] Completed tasks
+- [ ] Pending tasks
+- [ ] Future tasks"
+```
+
+#### Available Labels
+
+- Status Labels:
+  - `status:ready`: Ready to be worked on
+  - `status:blocked`: Work is blocked by other tasks
+- Component Labels:
+  - `component:video`: Video processing components
+  - `component:ai`: AI/ML components
+  - `component:infrastructure`: Infrastructure components
+  - `component:testing`: Testing related components
+  - `component:error-handling`: Error handling components
+  - `component:configuration`: Configuration components
+  - `component:performance`: Performance components
+  - `component:pipeline`: Pipeline components
+- Priority Labels:
+  - `priority:high`: High priority issues
+  - `priority:medium`: Medium priority issues
+  - `priority:low`: Low priority issues
+
+#### Best Practices
+
+1. Always update issue status after significant changes
+2. Use checkboxes to track sub-task progress
+3. Include clear progress indicators in issue descriptions
+4. Link related PRs to issues
+5. Keep issue descriptions up to date with implementation details
+
 ### Testing
 
 #### Running Tests
+
 ```bash
 # Run all tests
 pytest
@@ -168,13 +232,14 @@ pytest --cov=src tests/
 ```
 
 #### Test Structure
+
 ```python
 # test_video_processor.py
 class TestVideoProcessor:
     def setup_method(self):
         self.processor = VideoProcessor()
         self.test_file = "tests/fixtures/sample_video.mp4"
-    
+
     def test_valid_video_processing(self):
         result = self.processor.process({"file_path": self.test_file})
         assert result["status"] == "success"
@@ -183,24 +248,28 @@ class TestVideoProcessor:
 ## Technical Guidelines
 
 ### Video Processing
+
 - Maximum file size: 2GB
 - Supported formats: MP4, AVI, MOV
 - Minimum scene length: 2 seconds
 - Maximum scenes per video: 500
 
 ### Audio Processing
+
 - Speaker diarization enabled
 - Support for primary languages (EN, ES, FR, DE, ZH)
 - Word-level timestamp alignment
 - Background noise reduction
 
 ### Text Processing
+
 - OCR for on-screen text
 - Code block detection
 - Formatting preservation
 - Context-aware detection (slides, lists, code)
 
 ### Resource Management
+
 - Maximum concurrent jobs: 3
 - Memory limit: 4GB per job
 - Cache TTL: 24 hours
@@ -209,6 +278,7 @@ class TestVideoProcessor:
 ## API Usage Examples
 
 ### Processing a Video
+
 ```python
 from video_understanding import VideoProcessor
 
@@ -217,6 +287,7 @@ result = processor.process("path/to/video.mp4")
 ```
 
 ### Querying Content
+
 ```python
 from video_understanding import ContentQuery
 
@@ -244,18 +315,114 @@ response = query.ask("What was discussed at 5:20?", video_id="video123")
 ## Resources
 
 ### Documentation
+
 - [Technical Documentation](./docs/TECHNICAL.md)
 - [API Documentation](./docs/api/)
 - [Testing Guide](./docs/testing/)
 
 ### Tools
+
 - [Pytest](https://docs.pytest.org/)
 - [Black](https://black.readthedocs.io/)
 - [OpenAI API](https://platform.openai.com/docs/api-reference)
 - [Twelve Labs API](https://docs.twelvelabs.io/)
 
 ## Getting Help
+
 - Check existing issues for similar problems
 - Use descriptive titles for new issues
 - Include relevant code snippets
 - Provide error messages and logs
+
+### Project Board Status Updates
+
+#### Status Update Guidelines
+
+When updating project board items, follow these guidelines to avoid common issues:
+
+1. **Command Structure**
+
+   ```bash
+   # Basic status update (CORRECT)
+   gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --add-label "status:ready"
+
+   # Multiple labels (CORRECT)
+   gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --add-label "status:ready,component:metrics"
+
+   # Body update (CORRECT - use \n for newlines)
+   gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --body "Status: Complete\nProgress: 100%"
+   ```
+
+2. **Common Issues and Solutions**
+
+   - **Issue**: Multi-line body text causing command failures
+
+     ```bash
+     # INCORRECT ❌ - Multiple lines will break the command
+     gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --body "Status: Complete
+     Progress: 100%
+     Tasks:
+     - Task 1
+     - Task 2"
+
+     # CORRECT ✅ - Use \n for line breaks
+     gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --body "Status: Complete\nProgress: 100%\nTasks:\n- Task 1\n- Task 2"
+     ```
+
+   - **Issue**: Label not found errors
+
+     ```bash
+     # INCORRECT ❌ - Using non-existent label
+     gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --add-label "status:done"
+
+     # CORRECT ✅ - Use available labels
+     gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --add-label "status:ready"
+     ```
+
+   - **Issue**: Special characters in body text
+
+     ```bash
+     # INCORRECT ❌ - Unescaped special characters
+     gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --body "Progress: 100% | Status: Done"
+
+     # CORRECT ✅ - Properly escaped special characters
+     gh issue edit [ISSUE_NUMBER] -R admarble/Vidst --body "Progress: 100%% | Status: Done"
+     ```
+
+3. **Status Update Best Practices**
+
+   - Always verify label existence before using
+   - Use `\n` for line breaks instead of actual newlines
+   - Escape special characters in body text
+   - Keep status updates concise and structured
+   - Use checkboxes for progress tracking: `- [x]` for completed, `- [ ]` for pending
+
+4. **Automated Status Updates**
+
+   ```bash
+   # Create reusable status update script
+   function update_issue_status() {
+     ISSUE_NUMBER=$1
+     STATUS=$2
+     BODY=$3
+
+     gh issue edit $ISSUE_NUMBER -R admarble/Vidst \
+       --add-label "status:$STATUS" \
+       --body "$BODY"
+   }
+
+   # Example usage
+   update_issue_status 4 "ready" "Status: Complete\nProgress: 100%\nTasks:\n- [x] Implementation\n- [x] Testing\n- [x] Documentation"
+   ```
+
+5. **Status Validation**
+
+   Before updating status:
+
+   ```bash
+   # Check available labels
+   gh label list -R admarble/Vidst
+
+   # Verify issue exists
+   gh issue view [ISSUE_NUMBER] -R admarble/Vidst
+   ```

@@ -1,0 +1,56 @@
+
+﻿src.ai.models.twelve_labs.types.TaskOptions
+
+=============================================
+
+
+
+
+
+
+
+
+
+
+.. currentmodule:: src.ai.models.twelve_labs.types
+
+.. autoclass:: TaskOptions
+
+   :members:
+   :show-inheritance:
+   :special-memberinherited-members:
+
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+
+      ~TaskOptions.__init__
+      ~TaskOptions.clear
+      ~TaskOptions.copy
+      ~TaskOptions.fromkeys
+      ~TaskOptions.get
+      ~TaskOptions.items
+      ~TaskOptions.keys
+      ~TaskOptions.pop
+      ~TaskOptions.popitem
+      ~TaskOptions.setdefault
+      ~TaskOptions.update
+      ~TaskOptions.values
+
+   .. rubric:: Attributes
+
+   .. autosummary::
+
+      ~TaskOptions.confidence_threshold
+      ~TaskOptions.max_scenes
+      ~TaskOptions.language
+      ~TaskOptions.include_metadata
+
+Indices and Tables
+
+
+
+
+
+\* :doc:`/modindex`*
