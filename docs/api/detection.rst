@@ -1,8 +1,8 @@
 Object Detection API
-=================
+====================
 
 Detection Components
------------------
+--------------------
 
 The object detection system provides functionality for identifying and tracking objects within video frames.
 
@@ -114,7 +114,7 @@ Usage Examples
 ~~~~~~~~~~~
 
 Basic Detection
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -122,19 +122,19 @@ Basic Detection
 
    # Initialize detector
    config = ModelConfig(
-       confidence_threshold=0.5,
-       nms_threshold=0.4,
-       model_type="yolov5"
+         confidence_threshold=0.5,
+         nms_threshold=0.4,
+         model_type="yolov5"
    )
    detector = ObjectDetector(config)
 
    # Detect objects in a frame
    detections = detector.detect_objects(frame)
    for detection in detections:
-       print(f"Found {detection.class_name} with confidence {detection.confidence}")
+         print(f"Found {detection.class_name} with confidence {detection.confidence}")
 
 Batch Processing
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -143,4 +143,4 @@ Batch Processing
    batch_results = detector.batch_detect(frames)
 
    for frame_idx, detections in enumerate(batch_results):
-       print(f"Frame {frame_idx}: Found {len(detections)} objects")
+         print(f"Frame {frame_idx}: Found {len(detections)} objects")

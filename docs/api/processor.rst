@@ -1,8 +1,8 @@
 Video Processor API
-==================
+===================
 
 VideoProcessor
-------------
+--------------
 
 The main class for processing video content. This class provides the core functionality for analyzing and processing video files.
 
@@ -33,15 +33,15 @@ Methods
 
       # Initialize processor with configuration
       config = ProcessorConfig(
-          detection_enabled=True,
-          ocr_enabled=True
+            detection_enabled=True,
+            ocr_enabled=True
       )
       processor = VideoProcessor(config)
 
       # Process video
       with processor.process(video) as context:
-          results = processor.analyze_frames(context)
-          print(f"Found {len(results['objects'])} objects")
+            results = processor.analyze_frames(context)
+            print(f"Found {len(results['objects'])} objects")
 
 .. py:method:: analyze_frames(context: UploadContext) -> Dict[str, Any]
 
@@ -91,7 +91,7 @@ Usage Examples
 ~~~~~~~~~~~~
 
 Basic Usage
-^^^^^^^^^^
+^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -99,26 +99,26 @@ Basic Usage
 
    # Initialize processor
    config = ProcessorConfig(
-       detection_enabled=True,
-       ocr_enabled=True
+         detection_enabled=True,
+         ocr_enabled=True
    )
    processor = VideoProcessor(config)
 
    # Process video
    with processor.process(video) as context:
-       results = processor.analyze_frames(context)
-       print(f"Found {len(results['objects'])} objects")
+         results = processor.analyze_frames(context)
+         print(f"Found {len(results['objects'])} objects")
 
 Advanced Configuration
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    config = ProcessorConfig(
-       detection_enabled=True,
-       ocr_enabled=True,
-       scene_detection_threshold=0.4,
-       max_frames=1000,
-       batch_size=32
+         detection_enabled=True,
+         ocr_enabled=True,
+         scene_detection_threshold=0.4,
+         max_frames=1000,
+         batch_size=32
    )
    processor = VideoProcessor(config)

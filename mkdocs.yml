@@ -1,5 +1,5 @@
 site_name: Vidst
-site_description: AI-powered video understanding and analysis system
+site_description: AI-powered video understanding and analysis system - POC
 site_author: admarble
 site_url: https://admarble.github.io/Vidst
 repo_name: admarble/Vidst
@@ -15,7 +15,6 @@ theme:
   - navigation.top
   - search.suggest
   - search.highlight
-  - content.tabs.link
   palette:
   - scheme: default
     primary: indigo
@@ -41,75 +40,25 @@ markdown_extensions:
 - meta
 - toc:
     permalink: true
-- pymdownx.arithmatex
-- pymdownx.betterem:
-    smart_enable: all
-- pymdownx.caret
-- pymdownx.critic
-- pymdownx.details
-- pymdownx.emoji:
-    emoji_index: materialx.emoji.twemoji
-    emoji_generator: materialx.emoji.to_svg
 - pymdownx.highlight
-- pymdownx.inlinehilite
-- pymdownx.keys
-- pymdownx.mark
-- pymdownx.smartsymbols
-- pymdownx.superfences:
-    custom_fences:
-    - name: mermaid
-      class: mermaid
-      format: pymdownx.superfences.fence_code_format
-- pymdownx.tabbed
+- pymdownx.superfences
 - pymdownx.tasklist:
     custom_checkbox: true
-- pymdownx.tilde
 nav:
 - Home: index.md
 - Getting Started:
-  - Installation: setup.md
-  - Configuration: api/config.md
-  - Quick Start: guides/quickstart.md
-- User Guide:
-  - Video Processing: api/pipeline.md
-  - Error Handling: api/error_handling.md
-  - Cache System: api/cache.md
-  - Video Upload: api/video_upload.md
-- Development:
-  - Contributing: development/contributing.md
-  - Testing: testing-guide.md
-  - CI/CD: ci-cd.md
-- API Reference:
-  - Core: api/core.md
-  - Models: api/models.md
-  - Storage: api/storage.md
-  - Video: api/video.md
+  - Installation: getting_started/installation.md
+  - Quick Start: getting_started/quickstart.md
+- Components:
+  - Status Dashboard: components/status_dashboard.md
+  - Scene Detection: components/scene_detection.md
+- Architecture:
+  - System Overview: architecture/system_overview.md
 plugins:
 - search
-- minify:
-    minify_html: true
-- git-revision-date-localized:
-    type: date
-- mkdocstrings:
-    default_handler: python
-    handlers:
-      python:
-        rendering:
-          show_source: true
-          show_root_heading: true
-        selection:
-          docstring_style: google
-          docstring_options:
-            trim_doctest_flags: true
-            ignore_init_summary: true
-          inherited_members: true
-          filters:
-          - '!^_'
 extra:
   social:
   - icon: fontawesome/brands/github
-    link: https://github.com/your-org/video-understanding-ai
-  - icon: fontawesome/brands/python
-    link: https://pypi.org/project/video-understanding-ai/
+    link: https://github.com/admarble/Vidst
   version:
     provider: mike

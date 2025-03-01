@@ -1,10 +1,10 @@
 Vector Storage API
-================
+==================
 
 The vector storage module provides high-performance vector storage and similarity search functionality using FAISS.
 
 Core Components
--------------
+---------------
 
 .. module:: video_understanding.storage.vector
    :synopsis: Vector storage functionality
@@ -43,7 +43,7 @@ Core Components
       ...     print(f"Match {r['id']}: {r['similarity']:.3f}")
 
 Asynchronous Storage
-------------------
+--------------------
 
 .. autoclass:: AsyncVectorStorage
    :members:
@@ -75,7 +75,7 @@ Asynchronous Storage
       >>> asyncio.run(example())
 
 Connection Pool
--------------
+---------------
 
 .. autoclass:: VectorStoragePool
    :members:
@@ -107,7 +107,7 @@ Connection Pool
       ...     await pool.close()
 
 Resource Management
-----------------
+-------------------
 
 .. autoclass:: ResourceMonitor
    :members:
@@ -138,7 +138,7 @@ Resource Management
       ...     await monitor.stop()
 
 Configuration
------------
+-------------
 
 .. autoclass:: VectorStorageConfig
    :members:
@@ -162,7 +162,7 @@ Configuration
    Resource quotas and limits.
 
 Types and Exceptions
------------------
+--------------------
 
 .. autoclass:: VectorMetadata
    :members:
@@ -197,75 +197,79 @@ Types and Exceptions
    Exception for exceeded resource quotas.
 
 Performance Considerations
------------------------
+--------------------------
 
 Vector Dimensionality
-^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^
 - Choose appropriate vector dimension based on model output
 - Higher dimensions provide better accuracy but use more memory
 - Common dimensions: 768 (BERT), 512 (ResNet), 1024 (CLIP)
 
 Index Types
-^^^^^^^^^^
+
+^^^^^^^^^^^
 - ``flat``: Exact search, best for small datasets (<100K vectors)
 - ``hnsw``: Approximate search, good balance of speed and accuracy
 - ``ivf``: Approximate search, best for very large datasets (>1M vectors)
 
 Batch Processing
-^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^
 - Use batch operations when possible
 - Optimal batch size depends on available memory
 - Default batch size: 1000 vectors
 - Monitor memory usage during batch operations
 
 Resource Management
-^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^
 - Set appropriate resource quotas
 - Monitor memory usage
 - Use connection pooling for concurrent access
 - Implement proper cleanup
 
 Example Configurations
--------------------
+----------------------
 
 Small Dataset (<100K vectors)::
 
    config = VectorStorageConfig(
-       dimension=768,
-       index_type="flat",
-       similarity_threshold=0.8,
-       max_vectors=100_000
+         dimension=768,
+         index_type="flat",
+         similarity_threshold=0.8,
+         max_vectors=100_000
    )
 
 Medium Dataset (<1M vectors)::
 
    config = VectorStorageConfig(
-       dimension=768,
-       index_type="hnsw",
-       similarity_threshold=0.7,
-       max_vectors=1_000_000
+         dimension=768,
+         index_type="hnsw",
+         similarity_threshold=0.7,
+         max_vectors=1_000_000
    )
 
 Large Dataset (>1M vectors)::
 
    config = VectorStorageConfig(
-       dimension=768,
-       index_type="ivf",
-       similarity_threshold=0.6,
-       max_vectors=10_000_000
+         dimension=768,
+         index_type="ivf",
+         similarity_threshold=0.6,
+         max_vectors=10_000_000
    )
 
 High Concurrency::
 
    pool_config = PoolConfig(
-       min_size=5,
-       max_size=20,
-       max_idle_time=300,
-       health_check_interval=30
+         min_size=5,
+         max_size=20,
+         max_idle_time=300,
+         health_check_interval=30
    )
 
    resource_quota = ResourceQuota(
-       max_memory_bytes=8 * 1024**3,  # 8GB
-       max_vectors=5_000_000,
-       max_concurrent_searches=200
+         max_memory_bytes=8 * 1024**3,  # 8GB
+         max_vectors=5_000_000,
+         max_concurrent_searches=200
    )

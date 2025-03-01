@@ -22,12 +22,12 @@ Core Components
 
 The system consists of several core components that work together to analyze video content:
 
-* :doc:`processor` - Main video processing pipeline
+********************************************
 * :doc:`detection` - Object detection system
-* :doc:`ocr` - Text recognition and extraction
-* :doc:`scene` - Scene detection and analysis
+********************************************
+*******************************************
 * :doc:`cache` - Caching and storage system
-* :doc:`reference` - General API reference
+*******************************************
 
 Getting Started
 
@@ -42,15 +42,15 @@ For a quick start, check out the :doc:`processor` documentation and the example 
 
    # Initialize processor
    config = ProcessorConfig(
-       detection_enabled=True,
-       ocr_enabled=True
+         detection_enabled=True,
+         ocr_enabled=True
    )
    processor = VideoProcessor(config)
 
    # Process video
    with processor.process(video) as context:
-       results = processor.analyze_frames(context)
-       print(f"Found {len(results['objects'])} objects")
+         results = processor.analyze_frames(context)
+         print(f"Found {len(results['objects'])} objects")
 
 For more examples, see the :doc:`../guides/getting_started` guide.
 
