@@ -59,6 +59,7 @@ refactor/
 │   ├── project_management/
 │   │   ├── github/
 │   │   │   ├── CONTRIBUTING.md
+│   │   │   ├── ci_workflow_changes.md
 │   │   │   ├── templates/
 │   │   │   │   ├── bug_report.md
 │   │   │   │   ├── component_replacement.md
@@ -127,10 +128,15 @@ refactor/
 - [Scope Realignment Plan](./02_planning/vidst_scope_realignment_plan.md) - Plan for realigning project scope
 - [Refactoring Checklist](./02_planning/execution/vidst_refactoring_checklist.md) - Comprehensive task list for refactoring
 - [GitHub Project Management](./02_planning/project_management/vidst_project_management_readme.md) - Project management setup and workflow
+- [CI Workflow Changes](./02_planning/project_management/github/ci_workflow_changes.md) - Documentation of CI workflow simplifications and restoration plan
 - [Vector DB API Integration](./03_implementation_guides/vidst_vector_db_api_integration.md) - Vector database integration strategy
 - [Twelve Labs Integration](./03_implementation_guides/vidst_twelve_labs_integration_strategy.md) - Twelve Labs API integration strategy
 - [Documentation Consolidation Plan](./04_documentation/vidst_documentation_consolidation_plan.md) - Plan for streamlining documentation
 - [TDD Testing Strategy](./05_testing/vidst_tdd_testing_strategy.md) - Test-driven development approach for the project
+
+## Recent Updates
+
+- **CI Workflow Simplification (March 2024)**: The CI workflow has been temporarily simplified to facilitate the file structure refactoring. See [CI Workflow Changes](./02_planning/project_management/github/ci_workflow_changes.md) for details on what was changed and the plan for gradually restoring full CI checks.
 
 ## File Naming Convention
 
