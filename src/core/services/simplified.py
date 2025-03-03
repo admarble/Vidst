@@ -7,6 +7,7 @@ error handling, configuration management, and common patterns.
 
 import asyncio
 import logging
+import random
 from abc import ABC, abstractmethod
 from typing import Any, Awaitable, Callable, Dict, Generic, Type, TypeVar
 
@@ -20,7 +21,6 @@ from src.core.services.error_handling import (
     handle_service_errors,
     is_retryable_error,
 )
-from src.core.services.utils import CircuitBreaker
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -45,22 +45,7 @@ class SimpleServiceConfig(ServiceConfig):
         30.0, description="Default timeout in seconds for service operations"
     )
 
-    # Retry configuration
-    max_retries: int = Field(
-        3, description="Maximum number of retry attempts for failed operations"
-    )
-    retry_delay: float = Field(1.0, description="Base delay between retries in seconds")
-
-    # Circuit breaker configuration
-    circuit_breaker_enabled: bool = Field(
-        True, description="Whether to enable the circuit breaker"
-    )
-    failure_threshold: int = Field(
-        5, description="Number of failures before circuit opens"
-    )
-    reset_timeout: int = Field(
-        60, description="Seconds to wait before attempting reset"
-    )
+    # Using parent ServiceConfig for retry and circuit breaker
 
     # Logging configuration
     log_level: str = Field("INFO", description="Log level for service operations")
@@ -93,12 +78,9 @@ class SimpleService(Generic[ConfigT], ABC):
         self.config = config
         self.circuit_breaker = None
 
-        if self.config.circuit_breaker_enabled:
-            self.circuit_breaker = CircuitBreaker(
-                failure_threshold=self.config.failure_threshold,
-                reset_timeout=self.config.reset_timeout,
-                service_name=self.config.service_name,
-            )
+        # Initialize circuit breaker from configuration
+        if self.config.circuit_breaker.enabled:
+            self.circuit_breaker = self.config.create_circuit_breaker()
 
         try:
             self.validate_config()
@@ -141,7 +123,7 @@ class SimpleService(Generic[ConfigT], ABC):
         """
         logger.info("[%s] Initializing service", self.config.service_name)
         await self._initialize_impl()
-        logger.info("[%s] Service initialized successfully", self.config.service_name)
+        logger.info("[%s] Service initialized", self.config.service_name)
 
     @abstractmethod
     async def _initialize_impl(self) -> None:
@@ -171,7 +153,7 @@ class SimpleService(Generic[ConfigT], ABC):
         """
         logger.info("[%s] Shutting down service", self.config.service_name)
         await self._shutdown_impl()
-        logger.info("[%s] Service shut down successfully", self.config.service_name)
+        logger.info("[%s] Service shut down", self.config.service_name)
 
     @abstractmethod
     async def _shutdown_impl(self) -> None:
@@ -193,15 +175,18 @@ class SimpleService(Generic[ConfigT], ABC):
     async def health_check(self) -> Dict[str, Any]:
         """Check the health of the service.
 
+        This method checks the health of the service and returns a dictionary
+        with health information.
+
         Returns:
-            Dictionary with health check information
+            Dictionary with health information
 
         Raises:
             EnhancedServiceError: If health check fails
         """
+        logger.debug("[%s] Performing health check", self.config.service_name)
         result = await self._health_check_impl()
-        result["service_name"] = self.config.service_name
-        result["status"] = "healthy"
+        logger.debug("[%s] Health check completed", self.config.service_name)
         return result
 
     async def _health_check_impl(self) -> Dict[str, Any]:
@@ -211,13 +196,16 @@ class SimpleService(Generic[ConfigT], ABC):
         service-specific health checks.
 
         Returns:
-            Dictionary with health check information
+            Dictionary with health information
 
         Raises:
             EnhancedServiceError: If health check fails
         """
-        # Default implementation just returns an empty dict
-        return {}
+        # Default implementation returns basic health information
+        return {
+            "service": self.config.service_name,
+            "status": "ok",
+        }
 
     async def execute_with_retry(
         self, func: Callable[..., Awaitable[T]], *args: Any, **kwargs: Any
@@ -238,8 +226,12 @@ class SimpleService(Generic[ConfigT], ABC):
         Raises:
             EnhancedServiceError: If function fails after all retries
         """
-        max_retries = kwargs.pop("max_retries", self.config.max_retries)
-        retry_delay = kwargs.pop("retry_delay", self.config.retry_delay)
+        # Use retry configuration from service config
+        max_retries = kwargs.pop("max_retries", self.config.retry.max_retries)
+        retry_delay = kwargs.pop("retry_delay", self.config.retry.base_delay)
+        max_delay = kwargs.pop("max_delay", self.config.retry.max_delay)
+        backoff_factor = kwargs.pop("backoff_factor", self.config.retry.backoff_factor)
+        jitter = kwargs.pop("jitter", self.config.retry.jitter)
 
         last_exception = None
 
@@ -278,7 +270,11 @@ class SimpleService(Generic[ConfigT], ABC):
                     )
 
                 # Calculate delay with exponential backoff
-                delay = retry_delay * (2**attempt)
+                delay = min(retry_delay * (backoff_factor**attempt), max_delay)
+
+                # Add jitter if enabled
+                if jitter:
+                    delay = delay * (0.5 + random.random())
 
                 # Log the retry
                 logger.warning(

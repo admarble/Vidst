@@ -1,146 +1,165 @@
 """
-Example service implementation using the service interface framework.
+Example usage of the service interfaces.
 
-This module demonstrates how to use the service interface framework to create
-a simple service implementation.
+This module demonstrates how to use the service interfaces with the new
+configuration management system.
 """
 
-from typing import Dict, List, Optional
+import asyncio
+import logging
+from typing import Any, Dict
 
-from pydantic import Field
-
-from src.core.services.base import (
-    BaseService,
-    ConfigurationError,
-    ServiceConfig,
-    ServiceError,
+from src.core.services.base import BaseService, ServiceConfig
+from src.core.services.config import CircuitBreakerConfig, RetryConfig
+from src.core.services.error_handling import (
+    EnhancedServiceError,
+    ErrorCategory,
+    ErrorSeverity,
 )
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class ExampleServiceConfig(ServiceConfig):
-    """Configuration for the example service."""
+    """Example service configuration."""
 
-    api_key: str = Field(..., description="API key for authentication")
-    api_url: str = Field("https://api.example.com", description="API URL")
-    cache_ttl: int = Field(300, description="Cache TTL in seconds")
+    api_key: str
+    api_url: str = "https://api.example.com"
 
+    # Customize circuit breaker configuration
+    circuit_breaker: CircuitBreakerConfig = CircuitBreakerConfig(
+        enabled=True,
+        failure_threshold=3,  # Lower threshold for example
+        reset_timeout=30,  # Shorter timeout for example
+    )
 
-class ExampleServiceError(ServiceError):
-    """Error raised by the example service."""
-
-    pass
+    # Customize retry configuration
+    retry: RetryConfig = RetryConfig(
+        max_retries=2,  # Fewer retries for example
+        base_delay=0.5,  # Shorter delay for example
+        max_delay=5.0,  # Lower max delay for example
+        backoff_factor=1.5,  # Smaller backoff factor
+        jitter=True,
+    )
 
 
 class ExampleService(BaseService[ExampleServiceConfig]):
-    """Example service implementation.
+    """Example service implementation."""
 
-    This class demonstrates how to implement a service using the base service
-    interface.
-    """
-
-    # Override the config_class class variable
     config_class = ExampleServiceConfig
 
     def __init__(self, config: ExampleServiceConfig):
-        """Initialize the example service.
-
-        Args:
-            config: Service configuration
-        """
+        """Initialize the service."""
         super().__init__(config)
-        self.client = None
+        self._connected = False
+        self._client = None
 
-    def validate_config(self) -> None:
-        """Validate the service configuration.
+        # Create a circuit breaker from the configuration
+        self.circuit_breaker = self.config.create_circuit_breaker()
 
-        Raises:
-            ConfigurationError: If configuration is invalid
-        """
-        super().validate_config()
-
-        # Additional validation beyond what Pydantic provides
-        if not self.config.api_key.startswith("key_"):
-            raise ConfigurationError(
-                "API key must start with 'key_'", service_name=self.config.service_name
-            )
+        # Create retry decorators from the configuration
+        self.retry_decorator = self.config.create_retry_decorator()
+        self.simple_retry = self.config.create_simple_retry_decorator()
+        self.connection_retry = self.config.create_connection_retry_decorator()
 
     async def initialize(self) -> None:
-        """Initialize the service.
+        """Initialize the service."""
+        logger.info("[%s] Initializing service", self.config.service_name)
 
-        This method should be called after creating the service instance
-        to perform any necessary setup, such as establishing connections.
+        # Use the connection retry decorator for initialization
+        @self.connection_retry
+        async def connect():
+            # Simulate connection
+            await asyncio.sleep(0.1)
+            return "connected"
 
-        Raises:
-            ServiceError: If initialization fails
-        """
-        try:
-            # In a real implementation, this would create an API client
-            self.client = {
-                "api_key": self.config.api_key,
-                "api_url": self.config.api_url,
-            }
-
-            # Test the connection
-            await self.ping()
-        except Exception as e:
-            raise ExampleServiceError(
-                f"Failed to initialize service: {str(e)}",
-                service_name=self.config.service_name,
-            )
+        result = await connect()
+        self._connected = True
+        logger.info("[%s] Service initialized: %s", self.config.service_name, result)
 
     async def shutdown(self) -> None:
-        """Shutdown the service.
+        """Shutdown the service."""
+        logger.info("[%s] Shutting down service", self.config.service_name)
 
-        This method should be called before disposing of the service instance
-        to perform any necessary cleanup, such as closing connections.
+        # Simulate disconnection
+        await asyncio.sleep(0.1)
+        self._connected = False
 
-        Raises:
-            ServiceError: If shutdown fails
-        """
-        try:
-            # In a real implementation, this would close the API client
-            self.client = None
-        except Exception as e:
-            raise ExampleServiceError(
-                f"Failed to shutdown service: {str(e)}",
-                service_name=self.config.service_name,
-            )
+        logger.info("[%s] Service shut down", self.config.service_name)
 
-    async def ping(self) -> bool:
-        """Ping the service to check if it's available.
-
-        Returns:
-            True if the service is available
-
-        Raises:
-            ExampleServiceError: If the service is unavailable
-        """
-        try:
-            # In a real implementation, this would ping the API
-            return True
-        except Exception as e:
-            raise ExampleServiceError(
-                f"Failed to ping service: {str(e)}",
-                service_name=self.config.service_name,
-            )
-
-    async def get_data(self, query: str, limit: Optional[int] = None) -> List[Dict]:
+    async def get_data(self, resource_id: str) -> Dict[str, Any]:
         """Get data from the service.
 
+        This method demonstrates using the circuit breaker and retry logic.
+
         Args:
-            query: Query string
-            limit: Maximum number of results to return
+            resource_id: ID of the resource to get
 
         Returns:
-            List of data items
+            Resource data
 
         Raises:
-            ExampleServiceError: If there's an error getting data
+            EnhancedServiceError: If the operation fails
         """
-        try:
-            # In a real implementation, this would call the API
-            return [{"id": 1, "name": "Example", "query": query, "limit": limit}]
-        except Exception as e:
-            raise ExampleServiceError(
-                f"Failed to get data: {str(e)}", service_name=self.config.service_name
+        if not self._connected:
+            raise EnhancedServiceError(
+                message="Service is not connected",
+                service_name=self.config.service_name,
+                category=ErrorCategory.SERVICE_UNAVAILABLE,
+                severity=ErrorSeverity.ERROR,
             )
+
+        # Use the circuit breaker to execute the operation
+        if self.circuit_breaker:
+            return await self.circuit_breaker.execute(self._get_data_impl, resource_id)
+        else:
+            return await self._get_data_impl(resource_id)
+
+    @property
+    def is_connected(self) -> bool:
+        """Check if the service is connected."""
+        return self._connected
+
+    async def _get_data_impl(self, resource_id: str) -> Dict[str, Any]:
+        """Implementation of get_data."""
+        # Simulate API call
+        await asyncio.sleep(0.1)
+
+        # Return mock data
+        return {
+            "id": resource_id,
+            "name": f"Resource {resource_id}",
+            "status": "active",
+        }
+
+
+async def main():
+    """Run the example."""
+    # Create a service configuration
+    config = ExampleServiceConfig(
+        service_name="example_service",
+        api_key="example_key",
+        api_url="https://api.example.com",
+        timeout=30.0,  # Default timeout in seconds
+    )
+
+    # Create a service instance
+    service = ExampleService(config)
+
+    try:
+        # Initialize the service
+        await service.initialize()
+
+        # Use the service
+        data = await service.get_data("123")
+        logger.info("Got data: %s", data)
+
+    finally:
+        # Shutdown the service
+        await service.shutdown()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -13,7 +13,21 @@ Created a comprehensive error handling system in `src/core/services/error_handli
 - **is_retryable_error**: Function to determine if an error should be retried
 - **classify_error**: Function to automatically classify exceptions into categories
 
-## 2. Simplified Service Interface
+## 2. Resilience Patterns Implementation
+
+Implemented robust resilience patterns in `src/core/services/utils.py`:
+
+- **CircuitBreaker**: Pattern to prevent repeated calls to failing services
+  - Three states: Closed (normal), Open (blocking calls), Half-open (testing recovery)
+  - Configurable failure threshold and reset timeout
+  - Automatic state management based on service health
+
+- **Retry Mechanisms**: Multiple retry decorators for different scenarios
+  - **async_retry**: Configurable retry with exponential backoff and jitter
+  - **simple_retry**: Simplified retry for common transient errors
+  - **connection_retry**: Specialized retry for connection-related issues
+
+## 3. Simplified Service Interface
 
 Created a simplified service interface in `src/core/services/simplified.py` that provides:
 
@@ -22,7 +36,7 @@ Created a simplified service interface in `src/core/services/simplified.py` that
 - Standardized methods for initialization, shutdown, and health checks
 - The `execute_with_retry` method for consistent retry behavior
 
-## 3. Example Implementation and Testing
+## 4. Example Implementation and Testing
 
 - Created an example implementation in `src/core/services/example_simplified.py`
 - Created a test script in `src/core/services/test_integration.py` that verifies normal operation and error handling

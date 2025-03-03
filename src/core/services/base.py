@@ -11,6 +11,8 @@ from typing import Any, Dict, Generic, Optional, Type, TypeVar
 
 from pydantic import BaseModel, Field
 
+from src.core.services.config import CircuitBreakerConfig, RetryConfig
+
 # Configuration type variable for generic typing
 ConfigT = TypeVar("ConfigT", bound="ServiceConfig")
 
@@ -28,8 +30,23 @@ class ServiceConfig(BaseModel):
     timeout: float = Field(
         30.0, description="Default timeout in seconds for service operations"
     )
-    max_retries: int = Field(
-        3, description="Maximum number of retry attempts for failed operations"
+
+    # Add structured configuration for circuit breaker and retry
+    circuit_breaker: CircuitBreakerConfig = Field(
+        default_factory=lambda: CircuitBreakerConfig(
+            enabled=True, failure_threshold=5, reset_timeout=60
+        ),
+        description="Circuit breaker configuration",
+    )
+    retry: RetryConfig = Field(
+        default_factory=lambda: RetryConfig(
+            max_retries=3,
+            base_delay=1.0,
+            max_delay=60.0,
+            backoff_factor=2.0,
+            jitter=True,
+        ),
+        description="Retry configuration",
     )
 
     class Config:
@@ -37,6 +54,47 @@ class ServiceConfig(BaseModel):
 
         # Allow extra fields for forward compatibility
         extra = "ignore"
+
+    def create_circuit_breaker(self):
+        """Create a CircuitBreaker instance from this configuration.
+
+        Returns:
+            CircuitBreaker instance or None if circuit breaker is disabled
+        """
+        return self.circuit_breaker.create_circuit_breaker(
+            service_name=self.service_name
+        )
+
+    def create_retry_decorator(self, exceptions=None):
+        """Create a retry decorator from this configuration.
+
+        Args:
+            exceptions: Exception types that trigger a retry
+
+        Returns:
+            Retry decorator function
+        """
+        return self.retry.create_retry_decorator(
+            service_name=self.service_name, exceptions=exceptions
+        )
+
+    def create_simple_retry_decorator(self):
+        """Create a simple retry decorator with reasonable defaults.
+
+        Returns:
+            Simple retry decorator function
+        """
+        return self.retry.create_simple_retry_decorator(service_name=self.service_name)
+
+    def create_connection_retry_decorator(self):
+        """Create a connection retry decorator specialized for network operations.
+
+        Returns:
+            Connection retry decorator function
+        """
+        return self.retry.create_connection_retry_decorator(
+            service_name=self.service_name
+        )
 
 
 class ServiceError(Exception):
