@@ -23,6 +23,7 @@ These rules contain more detailed guidance and patterns, which may be useful as 
 5. [Documentation Rules](./documentation_rules.md) - Documentation standards
 6. [Testing Strategy](./testing_strategy.md) - Comprehensive testing approach
 7. [Video Understanding](./video_understanding.md) - Advanced video understanding implementation (⚠️ beyond POC scope)
+8. [GitHub API Integration](./github_api_integration.md) - Guidelines for GitHub API authentication and common issues
 
 ## Recommendation for Junior Developers
 
@@ -40,3 +41,4 @@ These rules contain more detailed guidance and patterns, which may be useful as 
 | Testing functionality | Focus on integration tests and meeting accuracy requirements | [Simplified Testing Approach](./simplified_testing_approach.md) |
 | Checking feature scope | Verify against minimum viable definitions | [POC Scope Guidelines](./poc_scope_guidelines.md) |
 | Implementing video understanding | Use simple patterns focused on core functionality | [Simplified Video Understanding](./simplified_video_understanding.md) |
+| GitHub API authentication | Follow authentication troubleshooting steps | [GitHub API Integration](./github_api_integration.md) |
