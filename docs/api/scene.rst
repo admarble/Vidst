@@ -1,8 +1,8 @@
 Scene Detection API
-================
+===================
 
 Scene Analysis Components
-----------------------
+-------------------------
 
 The scene detection system provides functionality for identifying and analyzing scene changes in videos.
 
@@ -109,7 +109,7 @@ Usage Examples
 ~~~~~~~~~~~
 
 Basic Scene Detection
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -117,19 +117,19 @@ Basic Scene Detection
 
    # Initialize detector
    config = SceneConfig(
-       threshold=0.3,
-       min_scene_length=2.0,
-       analyze_content=True
+         threshold=0.3,
+         min_scene_length=2.0,
+         analyze_content=True
    )
    detector = SceneDetector(config)
 
    # Detect scenes
    scenes = detector.detect_scenes(video)
    for scene in scenes:
-       print(f"Scene from {scene.start_time}s to {scene.end_time}s")
+         print(f"Scene from {scene.start_time}s to {scene.end_time}s")
 
 Scene Analysis
-^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -142,16 +142,16 @@ Scene Analysis
    print(f"Text regions found: {len(analysis.text_content)}")
 
 Advanced Usage
-^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    # Configure for presentation analysis
    config = SceneConfig(
-       threshold=0.4,
-       min_scene_length=5.0,
-       analyze_content=True,
-       detect_presentations=True
+         threshold=0.4,
+         min_scene_length=5.0,
+         analyze_content=True,
+         detect_presentations=True
    )
    detector = SceneDetector(config)
 
@@ -160,5 +160,5 @@ Advanced Usage
    presentations = [s for s in scenes if s.scene_type == "presentation"]
 
    for scene in presentations:
-       analysis = detector.analyze_scene(scene)
-       print(f"Presentation content: {analysis.content_summary}")
+         analysis = detector.analyze_scene(scene)
+         print(f"Presentation content: {analysis.content_summary}")

@@ -172,4 +172,4 @@ Common issues and solutions:
 
 ## API Reference
 
-For detailed API documentation, see the [GPT-4V API Reference](../api/ai/models/gpt4v.html).
+For detailed API documentation, see the [GPT-4V API Reference](../../api/ai/models/gpt4v.md).

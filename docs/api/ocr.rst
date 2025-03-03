@@ -2,7 +2,7 @@ OCR API
 =======
 
 Text Recognition Components
-------------------------
+---------------------------
 
 The OCR system provides functionality for extracting and processing text from video frames.
 
@@ -90,7 +90,7 @@ Usage Examples
 ~~~~~~~~~~~
 
 Basic Text Extraction
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -98,28 +98,28 @@ Basic Text Extraction
 
    # Initialize recognizer
    config = OCRConfig(
-       language="en",
-       min_confidence=0.7,
-       enable_layout_analysis=True
+         language="en",
+         min_confidence=0.7,
+         enable_layout_analysis=True
    )
    recognizer = TextRecognizer(config)
 
    # Extract text from a frame
    text_regions = recognizer.extract_text(frame)
    for region in text_regions:
-       print(f"Found text: {region.text} ({region.confidence})")
+         print(f"Found text: {region.text} ({region.confidence})")
 
 Code Block Detection
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    # Configure for code detection
    config = OCRConfig(
-       language="en",
-       min_confidence=0.8,
-       enable_layout_analysis=True,
-       detect_code_blocks=True
+         language="en",
+         min_confidence=0.8,
+         enable_layout_analysis=True,
+         detect_code_blocks=True
    )
    recognizer = TextRecognizer(config)
 
@@ -128,4 +128,4 @@ Code Block Detection
    code_blocks = [r for r in text_regions if r.type == "code"]
 
    for block in code_blocks:
-       print(f"Found code block:\n{block.text}")
+         print(f"Found code block:\n{block.text}")
